@@ -34,7 +34,8 @@ final class CameraService: NSObject, ObservableObject {
 
     private func configureSession() {
         session.beginConfiguration()
-        session.sessionPreset = .high
+        // .medium uses less CPU and RAM than .high; sufficient for preview-only (no recording).
+        session.sessionPreset = .medium
         session.commitConfiguration()
         refreshDeviceList()
     }
@@ -132,6 +133,20 @@ final class CameraService: NSObject, ObservableObject {
             }
         }
         session.startRunning()
+    }
+
+    /// Pause capture when window is minimized to save CPU and power.
+    func pause() {
+        sessionQueue.async { [weak self] in
+            self?.session.stopRunning()
+        }
+    }
+
+    /// Resume capture when window is visible again.
+    func resume() {
+        sessionQueue.async { [weak self] in
+            self?.session.startRunning()
+        }
     }
 
     func requestPermissionAndSetup(completion: (() -> Void)? = nil) {
