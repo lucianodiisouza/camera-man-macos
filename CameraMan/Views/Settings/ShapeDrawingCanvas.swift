@@ -34,7 +34,7 @@ struct ShapeDrawingCanvas: View {
             }
             .padding()
 
-            Text("Draw a closed shape: drag to draw, then tap Done. Use at least 3 points.")
+            Text("Draw a closed shape: sketch with the pencil, then tap Done. Use at least 3 points.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -53,17 +53,26 @@ struct ShapeDrawingCanvas: View {
                 }
                 .contentShape(Rectangle())
                 .gesture(
-                    DragGesture(minimumDistance: 4)
+                    DragGesture(minimumDistance: 0)
                         .onChanged { value in
                             let p = value.location
                             if currentDrag == nil {
                                 drawingPoints.append(p)
+                            } else {
+                                // Pencil-style: add point whenever we've moved enough (fluid stroke)
+                                let last = drawingPoints.last ?? p
+                                if hypot(p.x - last.x, p.y - last.y) > 2 {
+                                    drawingPoints.append(p)
+                                }
                             }
                             currentDrag = p
                         }
                         .onEnded { value in
                             let p = value.location
-                            drawingPoints.append(p)
+                            let last = drawingPoints.last ?? p
+                            if hypot(p.x - last.x, p.y - last.y) > 1 {
+                                drawingPoints.append(p)
+                            }
                             currentDrag = nil
                         }
                 )
@@ -83,7 +92,7 @@ struct ShapeDrawingCanvas: View {
         let scale: CGFloat = min(size.width, size.height) * 0.9
         let origin = CGPoint(x: (size.width - scale) / 2, y: (size.height - scale) / 2)
         return ZStack {
-            // Draw existing segments
+            // Draw stroke (pencil-style: continuous path, rounded caps)
             if drawingPoints.count >= 2 {
                 Path { path in
                     path.move(to: pointInCanvas(drawingPoints[0], size: size, origin: origin, scale: scale))
@@ -94,14 +103,19 @@ struct ShapeDrawingCanvas: View {
                         path.addLine(to: pointInCanvas(cur, size: size, origin: origin, scale: scale))
                     }
                 }
-                .stroke(Color.accentColor, lineWidth: 2)
+                .stroke(
+                    Color.accentColor,
+                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round)
+                )
             }
-            // Dots at each point
-            ForEach(Array(drawingPoints.enumerated()), id: \.offset) { _, p in
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 8, height: 8)
-                    .position(pointInCanvas(p, size: size, origin: origin, scale: scale))
+            // Dots only when few points (vector-style); hide for pencil strokes
+            if drawingPoints.count <= 25 {
+                ForEach(Array(drawingPoints.enumerated()), id: \.offset) { _, p in
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 8, height: 8)
+                        .position(pointInCanvas(p, size: size, origin: origin, scale: scale))
+                }
             }
         }
         .frame(width: size.width, height: size.height)
