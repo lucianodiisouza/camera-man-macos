@@ -74,10 +74,12 @@ final class ShortcutHandlingNSView: NSView {
 
     private func setWindowSize(preservingCenter window: NSWindow, width: CGFloat, height: CGFloat) {
         let frame = window.frame
-        let centerX = frame.midX
-        let centerY = frame.midY
+        // Preserve top-left corner (macOS: origin is bottom-left, so top = origin.y + height)
         let newSize = CGSize(width: width, height: height)
-        let newOrigin = CGPoint(x: centerX - newSize.width / 2, y: centerY - newSize.height / 2)
+        let newOrigin = CGPoint(
+            x: frame.minX,
+            y: (frame.origin.y + frame.height) - newSize.height
+        )
         window.setFrame(CGRect(origin: newOrigin, size: newSize), display: true)
     }
 }
