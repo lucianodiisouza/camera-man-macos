@@ -40,6 +40,9 @@ struct SettingsPanel: View {
 
                 shortcutsTab
                     .tabItem { Label("Shortcuts", systemImage: "keyboard") }
+
+                CustomShapesPanel()
+                    .tabItem { Label("My shapes", systemImage: "hand.draw") }
             }
             .navigationTitle("Settings")
             #if os(iOS)
@@ -80,15 +83,19 @@ struct SettingsPanel: View {
 
     private var shapeSection: some View {
         Section {
-            Picker(selection: $appState.shapeType) {
-                ForEach(ShapeType.allCases) { shape in
-                    Text(shape.displayName).tag(shape)
+            Picker(selection: shapeSelectionBinding) {
+                ForEach(ShapeType.builtinCases, id: \.self) { shape in
+                    Text(shape.displayName).tag(shapeSelectionTag(for: shape))
+                }
+                ForEach(appState.customShapes) { custom in
+                    Text("Custom: \(custom.name)").tag(shapeSelectionTag(customId: custom.id))
                 }
             } label: {
                 Label("Shape", systemImage: "square.on.circle")
             }
             .onChange(of: appState.shapeType) { _, _ in appState.saveToUserDefaults() }
-            if appState.shapeType != .circle {
+            .onChange(of: appState.selectedCustomShapeId) { _, _ in appState.saveToUserDefaults() }
+            if appState.shapeType != .circle && appState.shapeType != .custom {
                 HStack {
                     Label("Corner radius", systemImage: "rectangle.roundedcorner")
                     Slider(value: $appState.shapeCornerRadius, in: AppState.shapeCornerRadiusRange, step: 2)
@@ -289,6 +296,37 @@ struct SettingsPanel: View {
             }
         }
         .listStyle(.inset)
+    }
+
+    private func shapeSelectionTag(for shape: ShapeType) -> String {
+        if shape == .custom, let id = appState.selectedCustomShapeId {
+            return "custom:\(id.uuidString)"
+        }
+        return shape.rawValue
+    }
+
+    private func shapeSelectionTag(customId: UUID) -> String {
+        "custom:\(customId.uuidString)"
+    }
+
+    private var shapeSelectionBinding: Binding<String> {
+        Binding(
+            get: {
+                if appState.shapeType == .custom, let id = appState.selectedCustomShapeId {
+                    return "custom:\(id.uuidString)"
+                }
+                return appState.shapeType.rawValue
+            },
+            set: { tag in
+                if tag.hasPrefix("custom:"), let id = UUID(uuidString: String(tag.dropFirst(7))) {
+                    appState.selectCustomShape(id)
+                } else if let shape = ShapeType(rawValue: tag), shape != .custom {
+                    appState.shapeType = shape
+                    appState.selectedCustomShapeId = nil
+                    appState.saveToUserDefaults()
+                }
+            }
+        )
     }
 
     private func applyWindowPreset(_ preset: WindowSizePreset) {
