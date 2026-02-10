@@ -10,80 +10,15 @@ struct CameraView: View {
     var body: some View {
         GeometryReader { geo in
             let size = geo.size
-            ZStack {
-                // 1) External shadow only (behind preview); independent of border — can be shadow-only
-                // Drawn on the clip shape so it always matches the visible camera outline (including when zoom < 1)
-                if appState.showShadow, appState.borderShadowRadius > 0 {
-                    let shadowStrokeWidth: CGFloat = (appState.showBorder && appState.borderWidth > 0)
-                        ? appState.borderWidth + 2 * appState.borderShadowRadius
-                        : 2 * appState.borderShadowRadius
-                    shapeView
-                        .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
-                        .compositingGroup()
-                        .blur(radius: appState.borderShadowRadius)
-                }
-
-                if let frame = cameraService.currentFrame {
-                    Group {
-                        FilteredCameraPreviewView(cgImage: frame)
-                            .scaleEffect(
-                                x: appState.flipHorizontal ? -1 : 1,
-                                y: appState.flipVertical ? -1 : 1,
-                                anchor: .center
-                            )
-                            .scaleEffect(appState.scale)
-                            .offset(
-                                x: size.width * (appState.offsetX / 100),
-                                y: size.height * (-appState.offsetY / 100)
-                            )
-                    }
-                    .frame(width: size.width, height: size.height)
-                    .clipShape(shapeView)
-                } else if let layer = previewLayer {
-                    Group {
-                        CameraPreviewRepresentable(layer: layer)
-                            .scaleEffect(
-                                x: appState.flipHorizontal ? -1 : 1,
-                                y: appState.flipVertical ? -1 : 1,
-                                anchor: .center
-                            )
-                            .scaleEffect(appState.scale)
-                            .offset(
-                                x: size.width * (appState.offsetX / 100),
-                                y: size.height * (-appState.offsetY / 100)
-                            )
-                    }
-                    .frame(width: size.width, height: size.height)
-                    .clipShape(shapeView)
+            Group {
+                if appState.cameraPermissionGranted == true {
+                    // Só mostra o shape da câmera depois que o usuário aceitou a permissão
+                    cameraShapeStack(size: size)
                 } else {
-                    Color.black
-                        .overlay {
-                            if appState.cameraStatus == .loading {
-                                ProgressView()
-                                    .scaleEffect(1.5)
-                            } else if appState.cameraStatus == .notFound {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "video.slash")
-                                        .font(.system(size: 48))
-                                        .foregroundStyle(.secondary)
-                                    Text("No camera found")
-                                        .font(.headline)
-                                    Text("Connect a camera or check permissions in System Settings.")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .padding(24)
-                            }
-                        }
-                }
-
-                // 3) Border stroke on top (independent of shadow); drawn on the clip shape so it always matches the visible camera outline (including when zoom < 1)
-                if appState.showBorder, appState.borderWidth > 0 {
-                    borderStrokeView()
+                    // Antes de aceitar (ou se negou): tela cheia, sem shape
+                    permissionPlaceholderView(size: size)
                 }
             }
-            .contentShape(shapeView)
             .onAppear {
                 cameraService.appState = appState
                 cameraService.requestPermissionAndSetup { [weak cameraService] in
@@ -111,6 +46,117 @@ struct CameraView: View {
             }
         }
         .background(Color.clear)
+    }
+
+    @ViewBuilder
+    private func cameraShapeStack(size: CGSize) -> some View {
+        ZStack {
+            if appState.showShadow, appState.borderShadowRadius > 0 {
+                let shadowStrokeWidth: CGFloat = (appState.showBorder && appState.borderWidth > 0)
+                    ? appState.borderWidth + 2 * appState.borderShadowRadius
+                    : 2 * appState.borderShadowRadius
+                shapeView
+                    .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
+                    .compositingGroup()
+                    .blur(radius: appState.borderShadowRadius)
+            }
+
+            if let frame = cameraService.currentFrame {
+                Group {
+                    FilteredCameraPreviewView(cgImage: frame)
+                        .scaleEffect(
+                            x: appState.flipHorizontal ? -1 : 1,
+                            y: appState.flipVertical ? -1 : 1,
+                            anchor: .center
+                        )
+                        .scaleEffect(appState.scale)
+                        .offset(
+                            x: size.width * (appState.offsetX / 100),
+                            y: size.height * (-appState.offsetY / 100)
+                        )
+                }
+                .frame(width: size.width, height: size.height)
+                .clipShape(shapeView)
+            } else if let layer = previewLayer {
+                Group {
+                    CameraPreviewRepresentable(layer: layer)
+                        .scaleEffect(
+                            x: appState.flipHorizontal ? -1 : 1,
+                            y: appState.flipVertical ? -1 : 1,
+                            anchor: .center
+                        )
+                        .scaleEffect(appState.scale)
+                        .offset(
+                            x: size.width * (appState.offsetX / 100),
+                            y: size.height * (-appState.offsetY / 100)
+                        )
+                }
+                .frame(width: size.width, height: size.height)
+                .clipShape(shapeView)
+            } else {
+                Color.black
+                    .overlay {
+                        if appState.cameraStatus == .loading {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                        } else if appState.cameraStatus == .notFound {
+                            VStack(spacing: 12) {
+                                Image(systemName: "video.slash")
+                                    .font(.system(size: 48))
+                                    .foregroundStyle(.secondary)
+                                Text("No camera found")
+                                    .font(.headline)
+                                Text("Connect a camera or check permissions in System Settings.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(24)
+                        }
+                    }
+            }
+
+            if appState.showBorder, appState.borderWidth > 0 {
+                borderStrokeView()
+            }
+        }
+        .contentShape(shapeView)
+    }
+
+    @ViewBuilder
+    private func permissionPlaceholderView(size: CGSize) -> some View {
+        Color.black
+            .frame(width: size.width, height: size.height)
+            .overlay {
+                if appState.cameraPermissionGranted == false {
+                    VStack(spacing: 16) {
+                        Image(systemName: "video.slash")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.secondary)
+                        Text("Camera access was denied")
+                            .font(.headline)
+                        Text("Open System Settings → Privacy & Security → Camera to allow Camera-Man.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                        Button("Open System Settings") {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .padding(24)
+                } else {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Requesting camera access…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
     }
 
     private var shapeView: some Shape {
