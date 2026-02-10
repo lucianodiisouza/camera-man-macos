@@ -63,7 +63,7 @@ final class KeyboardShortcutMonitor: ObservableObject {
             cycleToNextCamera(appState)
             return nil
         case 49: // Space
-            toggleWindowSize(appState)
+            toggleSpaceSlotSize(appState)
             return nil
         default:
             return event
@@ -80,21 +80,14 @@ final class KeyboardShortcutMonitor: ObservableObject {
         appState.showToast(devices[nextIdx].name)
     }
 
-    private func toggleWindowSize(_ appState: AppState) {
-        appState.windowSizePreset = appState.windowSizePreset == .small ? .large : .small
-        appState.saveToUserDefaults()
-        guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }) else { return }
-        setWindowSize(preservingCenter: window, width: appState.windowSizePreset.width, height: appState.windowSizePreset.height)
-    }
-
-    private func setWindowSize(preservingCenter window: NSWindow, width: CGFloat, height: CGFloat) {
-        let frame = window.frame
-        // Preserve top-left corner (macOS: origin is bottom-left, so top = origin.y + height)
-        let newSize = CGSize(width: width, height: height)
-        let newOrigin = CGPoint(
-            x: frame.minX,
-            y: (frame.origin.y + frame.height) - newSize.height
-        )
-        window.setFrame(CGRect(origin: newOrigin, size: newSize), display: true)
+    private func toggleSpaceSlotSize(_ appState: AppState) {
+        let newPreset = appState.spaceToggleTargetPreset()
+        appState.setWindowSizePreset(newPreset)
+        guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }),
+              let screen = window.screen ?? NSScreen.main else { return }
+        let visibleFrame = screen.visibleFrame
+        let newSize = newPreset.size(visibleFrame: visibleFrame)
+        let origin = appState.originToApply(for: newPreset, visibleFrame: visibleFrame, windowSize: newSize)
+        window.setFrame(CGRect(origin: origin, size: newSize), display: true)
     }
 }
