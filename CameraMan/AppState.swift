@@ -29,8 +29,15 @@ final class AppState: ObservableObject {
     @Published var borderShadowColor: Color = .black.opacity(0.5)
 
     // MARK: - Window
-    @Published var windowSizePreset: WindowSizePreset = .small
+    @Published var windowSizePreset: WindowSizePreset = .md
     @Published var screenEdge: ScreenEdge = .topLeft
+    /// Posição da janela por tamanho: cada preset (xs/sm/md/lg/full) lembra sua própria posição.
+    @Published var screenEdgeForPreset: [String: ScreenEdge] = [:]
+    /// Posição exata da janela por preset (quando o usuário arrasta). Nil = usar screen edge.
+    @Published var originForPreset: [String: CGPoint] = [:]
+    /// Slots para a tecla Space: alterna apenas entre estes dois tamanhos.
+    @Published var spaceSlot1: WindowSizePreset = .sm
+    @Published var spaceSlot2: WindowSizePreset = .lg
     @Published var selectedDisplayId: CGDirectDisplayID?
     @Published var isWindowVisible: Bool = true
 
@@ -71,6 +78,21 @@ final class AppState: ObservableObject {
         let borderShadowColorHex = "borderShadowColorHex"
         let windowSizePreset = "windowSizePreset"
         let screenEdge = "screenEdge"
+        func screenEdgeKey(_ preset: String) -> String { "screenEdge_\(preset)" }
+        func hasOriginKey(_ preset: String) -> String { "hasOrigin_\(preset)" }
+        func originXKey(_ preset: String) -> String { "originX_\(preset)" }
+        func originYKey(_ preset: String) -> String { "originY_\(preset)" }
+        // Legacy keys for migration from small/large
+        let screenEdgeForSmall = "screenEdgeForSmall"
+        let screenEdgeForLarge = "screenEdgeForLarge"
+        let hasOriginForSmall = "hasOriginForSmall"
+        let originSmallX = "originSmallX"
+        let originSmallY = "originSmallY"
+        let hasOriginForLarge = "hasOriginForLarge"
+        let originLargeX = "originLargeX"
+        let originLargeY = "originLargeY"
+        let spaceSlot1 = "spaceSlot1"
+        let spaceSlot2 = "spaceSlot2"
     }
 
     init() {
@@ -114,10 +136,44 @@ final class AppState: ObservableObject {
         if let hex = defaults.string(forKey: defaultsKeys.borderShadowColorHex) {
             borderShadowColor = Color(hex: hex)
         }
-        if let raw = defaults.string(forKey: defaultsKeys.windowSizePreset),
-           let preset = WindowSizePreset(rawValue: raw) { windowSizePreset = preset }
-        if let raw = defaults.string(forKey: defaultsKeys.screenEdge),
-           let edge = ScreenEdge(rawValue: raw) { screenEdge = edge }
+        if let raw = defaults.string(forKey: defaultsKeys.windowSizePreset) {
+            if let preset = WindowSizePreset(rawValue: raw) {
+                windowSizePreset = preset
+            } else if raw == "small" {
+                windowSizePreset = .sm
+            } else if raw == "large" {
+                windowSizePreset = .lg
+            }
+        }
+        let fallbackEdge: ScreenEdge = (defaults.string(forKey: defaultsKeys.screenEdge).flatMap { ScreenEdge(rawValue: $0) }) ?? .topLeft
+        for preset in WindowSizePreset.allCases {
+            let key = preset.rawValue
+            let edgeRaw = defaults.string(forKey: defaultsKeys.screenEdgeKey(key))
+                ?? (preset == .sm ? defaults.string(forKey: defaultsKeys.screenEdgeForSmall) : nil)
+                ?? (preset == .lg ? defaults.string(forKey: defaultsKeys.screenEdgeForLarge) : nil)
+            screenEdgeForPreset[key] = (edgeRaw.flatMap { ScreenEdge(rawValue: $0) }) ?? fallbackEdge
+            let hasOrigin: Bool
+            let ox: Double, oy: Double
+            if key == "sm" {
+                hasOrigin = defaults.bool(forKey: defaultsKeys.hasOriginForSmall)
+                ox = defaults.double(forKey: defaultsKeys.originSmallX)
+                oy = defaults.double(forKey: defaultsKeys.originSmallY)
+            } else if key == "lg" {
+                hasOrigin = defaults.bool(forKey: defaultsKeys.hasOriginForLarge)
+                ox = defaults.double(forKey: defaultsKeys.originLargeX)
+                oy = defaults.double(forKey: defaultsKeys.originLargeY)
+            } else {
+                hasOrigin = defaults.bool(forKey: defaultsKeys.hasOriginKey(key))
+                ox = defaults.double(forKey: defaultsKeys.originXKey(key))
+                oy = defaults.double(forKey: defaultsKeys.originYKey(key))
+            }
+            if hasOrigin { originForPreset[key] = CGPoint(x: ox, y: oy) }
+        }
+        if let raw = defaults.string(forKey: defaultsKeys.spaceSlot1),
+           let p = WindowSizePreset(rawValue: raw) { spaceSlot1 = p }
+        if let raw = defaults.string(forKey: defaultsKeys.spaceSlot2),
+           let p = WindowSizePreset(rawValue: raw) { spaceSlot2 = p }
+        screenEdge = screenEdge(for: windowSizePreset)
     }
 
     func saveToUserDefaults() {
@@ -140,6 +196,19 @@ final class AppState: ObservableObject {
         defaults.set(borderShadowColor.hex, forKey: defaultsKeys.borderShadowColorHex)
         defaults.set(windowSizePreset.rawValue, forKey: defaultsKeys.windowSizePreset)
         defaults.set(screenEdge.rawValue, forKey: defaultsKeys.screenEdge)
+        for preset in WindowSizePreset.allCases {
+            let key = preset.rawValue
+            defaults.set((screenEdgeForPreset[key] ?? .topLeft).rawValue, forKey: defaultsKeys.screenEdgeKey(key))
+            if let o = originForPreset[key] {
+                defaults.set(true, forKey: defaultsKeys.hasOriginKey(key))
+                defaults.set(Double(o.x), forKey: defaultsKeys.originXKey(key))
+                defaults.set(Double(o.y), forKey: defaultsKeys.originYKey(key))
+            } else {
+                defaults.set(false, forKey: defaultsKeys.hasOriginKey(key))
+            }
+        }
+        defaults.set(spaceSlot1.rawValue, forKey: defaultsKeys.spaceSlot1)
+        defaults.set(spaceSlot2.rawValue, forKey: defaultsKeys.spaceSlot2)
     }
 
     func resetToDefaults() {
@@ -160,9 +229,77 @@ final class AppState: ObservableObject {
         showShadow = false
         borderShadowRadius = 0
         borderShadowColor = .black.opacity(0.5)
-        windowSizePreset = .small
+        windowSizePreset = .md
         screenEdge = .topLeft
+        screenEdgeForPreset = [:]
+        originForPreset = [:]
+        spaceSlot1 = .sm
+        spaceSlot2 = .lg
         saveToUserDefaults()
+    }
+
+    /// Preset para o qual alternar ao apertar Space (o outro slot).
+    func spaceToggleTargetPreset() -> WindowSizePreset {
+        windowSizePreset == spaceSlot1 ? spaceSlot2 : spaceSlot1
+    }
+
+    /// Posição salva para o preset dado (usado ao alternar de tamanho).
+    func screenEdge(for preset: WindowSizePreset) -> ScreenEdge {
+        screenEdgeForPreset[preset.rawValue] ?? .topLeft
+    }
+
+    /// Altera o tamanho da janela e restaura a posição salva para esse tamanho.
+    func setWindowSizePreset(_ preset: WindowSizePreset) {
+        windowSizePreset = preset
+        screenEdge = screenEdge(for: preset)
+        saveToUserDefaults()
+    }
+
+    /// Define a posição na tela para o tamanho atual (e persiste para esse tamanho).
+    /// Remove a posição exata salva para esse preset, para que passe a usar o canto.
+    func setScreenEdge(_ edge: ScreenEdge) {
+        screenEdge = edge
+        screenEdgeForPreset[windowSizePreset.rawValue] = edge
+        originForPreset.removeValue(forKey: windowSizePreset.rawValue)
+        saveToUserDefaults()
+    }
+
+    /// Retorna a posição exata salva para o preset, ou nil se deve usar o canto (screen edge).
+    func origin(for preset: WindowSizePreset) -> CGPoint? {
+        originForPreset[preset.rawValue]
+    }
+
+    /// Salva a posição atual da janela como referência do tamanho atual (chamado ao arrastar a janela).
+    func setOriginForCurrentPreset(_ point: CGPoint) {
+        originForPreset[windowSizePreset.rawValue] = point
+        saveToUserDefaults()
+    }
+
+    /// Origem a usar ao aplicar o preset: posição salva (clampada ao ecrã) ou canto conforme edge.
+    func originToApply(for preset: WindowSizePreset, visibleFrame: CGRect, windowSize: CGSize) -> CGPoint {
+        if let custom = origin(for: preset) {
+            let maxX = visibleFrame.maxX - windowSize.width
+            let maxY = visibleFrame.maxY - windowSize.height
+            let x = min(max(custom.x, visibleFrame.minX), maxX)
+            let y = min(max(custom.y, visibleFrame.minY), maxY)
+            return CGPoint(x: x, y: y)
+        }
+        let edge = screenEdge(for: preset)
+        switch edge {
+        case .topLeft:
+            return CGPoint(x: visibleFrame.minX, y: visibleFrame.maxY - windowSize.height)
+        case .topRight:
+            return CGPoint(x: visibleFrame.maxX - windowSize.width, y: visibleFrame.maxY - windowSize.height)
+        case .bottomRight:
+            return CGPoint(x: visibleFrame.maxX - windowSize.width, y: visibleFrame.minY)
+        case .bottomLeft:
+            return CGPoint(x: visibleFrame.minX, y: visibleFrame.minY)
+        }
+    }
+
+    /// Sincroniza `screenEdge` com a posição salva do preset atual (ex.: após trocar de tamanho pelo Picker).
+    func syncScreenEdgeToPreset() {
+        screenEdge = screenEdge(for: windowSizePreset)
     }
 
     func cycleShape() {
@@ -214,29 +351,39 @@ struct CameraDevice: Identifiable {
 }
 
 enum WindowSizePreset: String, CaseIterable, Identifiable {
-    case small
-    case large
+    case xs
+    case sm
+    case md
+    case lg
+    case full
 
     var id: String { rawValue }
 
-    var width: CGFloat {
+    /// Tamanho fixo para xs/sm/md/lg; para full usa o visibleFrame quando disponível.
+    func size(visibleFrame: CGRect?) -> CGSize {
         switch self {
-        case .small: return 300
-        case .large: return 600
+        case .xs: return CGSize(width: 200, height: 200)
+        case .sm: return CGSize(width: 300, height: 300)
+        case .md: return CGSize(width: 400, height: 400)
+        case .lg: return CGSize(width: 560, height: 560)
+        case .full:
+            if let f = visibleFrame, f.width > 0, f.height > 0 {
+                return f.size
+            }
+            return CGSize(width: 960, height: 720)
         }
     }
 
-    var height: CGFloat {
-        switch self {
-        case .small: return 300
-        case .large: return 600
-        }
-    }
+    var width: CGFloat { size(visibleFrame: nil).width }
+    var height: CGFloat { size(visibleFrame: nil).height }
 
     var displayName: String {
         switch self {
-        case .small: return "Small"
-        case .large: return "Large"
+        case .xs: return "Extra Small"
+        case .sm: return "Small"
+        case .md: return "Medium"
+        case .lg: return "Large"
+        case .full: return "Full"
         }
     }
 }
