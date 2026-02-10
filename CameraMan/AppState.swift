@@ -40,7 +40,7 @@ final class AppState: ObservableObject {
     @Published var showResetConfirmation: Bool = false
 
     // MARK: - Constants
-    static let scaleRange: ClosedRange<Double> = 0.5...2.0
+    static let scaleRange: ClosedRange<Double> = 1.0...2.0
     static let offsetRange: ClosedRange<Double> = -50...50
     static let borderWidthRange: ClosedRange<CGFloat> = 0...20
     static let borderShadowRadiusRange: ClosedRange<CGFloat> = 0...24
@@ -92,7 +92,7 @@ final class AppState: ObservableObject {
         offsetX = defaults.double(forKey: defaultsKeys.offsetX)
         offsetY = defaults.double(forKey: defaultsKeys.offsetY)
         scale = defaults.double(forKey: defaultsKeys.scale)
-        if scale == 0 { scale = 1.0 }
+        if scale < 1.0 { scale = 1.0 }
         flipHorizontal = defaults.bool(forKey: defaultsKeys.flipHorizontal)
         flipVertical = defaults.bool(forKey: defaultsKeys.flipVertical)
         showBorder = defaults.object(forKey: defaultsKeys.showBorder) as? Bool ?? false

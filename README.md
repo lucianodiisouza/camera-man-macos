@@ -36,7 +36,7 @@ open build/Release/CameraMan.app
 ## Usage
 
 - **Settings**: Click the gear icon on the preview or use **⌘,**. Use the status bar icon for quick access when the window is in the background.
-- **Keyboard shortcuts** (with window focused): Arrows (position), +/− (zoom), R (reset zoom), / (flip), O (cycle shape), Backspace (next camera), Space (toggle window size).
+- **Keyboard shortcuts** (with window focused): Arrows (position), +/− (zoom da câmera), R (reset zoom), / (flip), O (cycle shape), Backspace (next camera), Space (toggle window size).
 
 ## License
 
