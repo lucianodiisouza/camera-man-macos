@@ -179,22 +179,44 @@ struct SettingsPanel: View {
                 Label("Window size", systemImage: "rectangle.compress.vertical")
             }
             .onChange(of: appState.windowSizePreset) { _, new in
-                appState.saveToUserDefaults()
-                resizeMainWindow(to: new)
+                appState.setWindowSizePreset(new)
+                applyWindowPreset(new)
             }
-            Picker(selection: $appState.screenEdge) {
+            Picker(selection: Binding(
+                get: { appState.screenEdge },
+                set: { newEdge in
+                    appState.setScreenEdge(newEdge)
+                    applyWindowPreset(appState.windowSizePreset)
+                }
+            )) {
                 ForEach(ScreenEdge.allCases) { edge in
                     Text(edge.displayName).tag(edge)
                 }
             } label: {
                 Label("Screen edge", systemImage: "arrow.up.left.and.arrow.down.right")
             }
-            .onChange(of: appState.screenEdge) { _, _ in
-                appState.saveToUserDefaults()
-                moveWindowToScreenEdge(appState.screenEdge)
+            Group {
+                Picker(selection: $appState.spaceSlot1) {
+                    ForEach(WindowSizePreset.allCases) { preset in
+                        Text(preset.displayName).tag(preset)
+                    }
+                } label: {
+                    Label("Space bar: Slot 1", systemImage: "square.2.layers.3d.bottom.filled")
+                }
+                .onChange(of: appState.spaceSlot1) { _, _ in appState.saveToUserDefaults() }
+                Picker(selection: $appState.spaceSlot2) {
+                    ForEach(WindowSizePreset.allCases) { preset in
+                        Text(preset.displayName).tag(preset)
+                    }
+                } label: {
+                    Label("Space bar: Slot 2", systemImage: "square.2.layers.3d.top.filled")
+                }
+                .onChange(of: appState.spaceSlot2) { _, _ in appState.saveToUserDefaults() }
             }
         } header: {
             Text("Window")
+        } footer: {
+            Text("Space bar toggles only between Slot 1 and Slot 2.")
         }
     }
 
@@ -214,33 +236,12 @@ struct SettingsPanel: View {
         }
     }
 
-    private func resizeMainWindow(to preset: WindowSizePreset) {
-        guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }) else { return }
-        let frame = window.frame
-        // Preserve top-left corner (macOS: origin is bottom-left, so top = origin.y + height)
-        let newSize = CGSize(width: preset.width, height: preset.height)
-        let newOrigin = CGPoint(
-            x: frame.minX,
-            y: (frame.origin.y + frame.height) - newSize.height
-        )
-        window.setFrame(CGRect(origin: newOrigin, size: newSize), display: true)
-    }
-
-    private func moveWindowToScreenEdge(_ edge: ScreenEdge) {
+    private func applyWindowPreset(_ preset: WindowSizePreset) {
         guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }),
               let screen = window.screen ?? NSScreen.main else { return }
-        let frame = screen.visibleFrame
-        var newOrigin = window.frame.origin
-        switch edge {
-        case .topLeft:
-            newOrigin = CGPoint(x: frame.minX, y: frame.maxY - window.frame.height)
-        case .topRight:
-            newOrigin = CGPoint(x: frame.maxX - window.frame.width, y: frame.maxY - window.frame.height)
-        case .bottomRight:
-            newOrigin = CGPoint(x: frame.maxX - window.frame.width, y: frame.minY)
-        case .bottomLeft:
-            newOrigin = CGPoint(x: frame.minX, y: frame.minY)
-        }
-        window.setFrameOrigin(newOrigin)
+        let visibleFrame = screen.visibleFrame
+        let newSize = preset.size(visibleFrame: visibleFrame)
+        let origin = appState.originToApply(for: preset, visibleFrame: visibleFrame, windowSize: newSize)
+        window.setFrame(CGRect(origin: origin, size: newSize), display: true)
     }
 }
