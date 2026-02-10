@@ -260,6 +260,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         appState.setOriginForCurrentPreset(window.frame.origin)
     }
 
+    func windowDidMiniaturize(_ notification: Notification) {
+        appState?.isWindowVisible = false
+    }
+
+    func windowDidDeminiaturize(_ notification: Notification) {
+        appState?.isWindowVisible = true
+    }
+
     @objc private func selectCamera(_ sender: NSMenuItem) {
         guard let deviceId = sender.representedObject as? String else { return }
         appState?.selectedDeviceId = deviceId
