@@ -6,6 +6,8 @@ final class AppState: ObservableObject {
     @Published var selectedDeviceId: String?
     @Published var videoDevices: [CameraDevice] = []
     @Published var cameraStatus: CameraStatus = .loading
+    /// nil = not determined yet, true = user accepted, false = denied. Only show camera shape when true.
+    @Published var cameraPermissionGranted: Bool? = nil
 
     // MARK: - Shape & transform
     @Published var shapeType: ShapeType = .circle
@@ -108,6 +110,7 @@ final class AppState: ObservableObject {
         let spaceSlot2 = "spaceSlot2"
         let customShapes = "customShapes"
         let selectedCustomShapeId = "selectedCustomShapeId"
+        let cameraPermissionGranted = "cameraPermissionGranted"
     }
 
     init() {
@@ -116,6 +119,9 @@ final class AppState: ObservableObject {
 
     func loadFromUserDefaults() {
         if let id = defaults.string(forKey: defaultsKeys.selectedDeviceId) { selectedDeviceId = id }
+        if defaults.object(forKey: defaultsKeys.cameraPermissionGranted) as? Bool == true {
+            cameraPermissionGranted = true
+        }
         if let raw = defaults.string(forKey: defaultsKeys.shapeType) {
             if let shape = ShapeType(rawValue: raw) {
                 shapeType = shape
@@ -245,6 +251,15 @@ final class AppState: ObservableObject {
             defaults.set(data, forKey: defaultsKeys.customShapes)
         }
         defaults.set(selectedCustomShapeId?.uuidString, forKey: defaultsKeys.selectedCustomShapeId)
+        if cameraPermissionGranted == true {
+            defaults.set(true, forKey: defaultsKeys.cameraPermissionGranted)
+        }
+    }
+
+    /// Call when the user has accepted camera permission (persists so we remember on next launch).
+    func didGrantCameraPermission() {
+        cameraPermissionGranted = true
+        defaults.set(true, forKey: defaultsKeys.cameraPermissionGranted)
     }
 
     func resetToDefaults() {
