@@ -20,6 +20,8 @@
 		BF_SettingsPanel /* SettingsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsPanel /* SettingsPanel.swift */; };
 		BF_ShapeType /* ShapeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShapeType /* ShapeType.swift */; };
 		BF_CustomShape /* CustomShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CustomShape /* CustomShape.swift */; };
+		BF_CustomShapesPanel /* CustomShapesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CustomShapesPanel /* CustomShapesPanel.swift */; };
+		BF_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +40,8 @@
 		FR_SettingsPanel /* SettingsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanel.swift; sourceTree = "<group>"; };
 		FR_ShapeType /* ShapeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeType.swift; sourceTree = "<group>"; };
 		FR_CustomShape /* CustomShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShape.swift; sourceTree = "<group>"; };
+		FR_CustomShapesPanel /* CustomShapesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShapesPanel.swift; sourceTree = "<group>"; };
+		FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeDrawingCanvas.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -111,6 +115,8 @@
 			isa = PBXGroup;
 			children = (
 				FR_SettingsPanel /* SettingsPanel.swift */,
+				FR_CustomShapesPanel /* CustomShapesPanel.swift */,
+				FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -201,6 +207,8 @@
 				BF_ContentView /* ContentView.swift in Sources */,
 				BF_SettingsPanel /* SettingsPanel.swift in Sources */,
 				BF_CustomShape /* CustomShape.swift in Sources */,
+				BF_CustomShapesPanel /* CustomShapesPanel.swift in Sources */,
+				BF_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
