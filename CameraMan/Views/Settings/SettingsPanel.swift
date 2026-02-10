@@ -1,23 +1,46 @@
 import SwiftUI
 import AppKit
 
+private struct ShortcutRow: View {
+    let action: String
+    let keys: String
+
+    var body: some View {
+        HStack {
+            Text(action)
+                .foregroundStyle(.primary)
+            Spacer()
+            Text(keys)
+                .font(.system(.body, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
 struct SettingsPanel: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
-            Form {
-                cameraSection
-                shapeSection
-                positionSection
-                zoomSection
-                flipSection
-                borderSection
-                windowSection
-                aboutSection
+            TabView {
+                Form {
+                    cameraSection
+                    shapeSection
+                    positionSection
+                    zoomSection
+                    flipSection
+                    borderSection
+                    windowSection
+                    aboutSection
+                }
+                .formStyle(.grouped)
+                .tabItem { Label("General", systemImage: "gearshape") }
+
+                shortcutsTab
+                    .tabItem { Label("Shortcuts", systemImage: "keyboard") }
             }
-            .formStyle(.grouped)
             .navigationTitle("Settings")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -67,7 +90,7 @@ struct SettingsPanel: View {
             .onChange(of: appState.shapeType) { _, _ in appState.saveToUserDefaults() }
             if appState.shapeType != .circle {
                 HStack {
-                    Label("Corner radius", systemImage: "square.roundedbottomright")
+                    Label("Corner radius", systemImage: "rectangle.roundedcorner")
                     Slider(value: $appState.shapeCornerRadius, in: AppState.shapeCornerRadiusRange, step: 2)
                         .onChange(of: appState.shapeCornerRadius) { _, _ in appState.saveToUserDefaults() }
                     Text("\(Int(appState.shapeCornerRadius))").frame(width: 32, alignment: .trailing)
@@ -113,7 +136,7 @@ struct SettingsPanel: View {
     private var flipSection: some View {
         Section {
             Toggle(isOn: $appState.flipHorizontal) {
-                Label("Flip horizontal", systemImage: "arrow.left.and.right.righttriangle.split.2x2")
+                Label("Flip horizontal", systemImage: "arrow.left.and.right")
             }
             .onChange(of: appState.flipHorizontal) { _, _ in appState.saveToUserDefaults() }
             Toggle(isOn: $appState.flipVertical) {
@@ -151,7 +174,7 @@ struct SettingsPanel: View {
             }
             // Shadow (independente — pode ter só sombra sem borda)
             Toggle(isOn: $appState.showShadow) {
-                Label("Show shadow", systemImage: "drop.shadow")
+                Label("Show shadow", systemImage: "sun.max")
             }
             .onChange(of: appState.showShadow) { _, _ in appState.saveToUserDefaults() }
             if appState.showShadow {
@@ -234,6 +257,38 @@ struct SettingsPanel: View {
         } header: {
             Text("About")
         }
+    }
+
+    private var shortcutsTab: some View {
+        List {
+            Section {
+                ShortcutRow(action: "Settings", keys: "⌘ ,")
+                ShortcutRow(action: "Restore defaults", keys: "—")
+                ShortcutRow(action: "Quit Camera-Man", keys: "⌘ Q")
+            } header: {
+                Label("Menu bar", systemImage: "menubar.rectangle")
+            }
+
+            Section {
+                ShortcutRow(action: "Move view left", keys: "←")
+                ShortcutRow(action: "Move view right", keys: "→")
+                ShortcutRow(action: "Move view up", keys: "↑")
+                ShortcutRow(action: "Move view down", keys: "↓")
+                ShortcutRow(action: "Zoom in", keys: "+")
+                ShortcutRow(action: "Zoom out", keys: "−")
+                ShortcutRow(action: "Reset zoom", keys: "R")
+                ShortcutRow(action: "Flip horizontal", keys: "/")
+                ShortcutRow(action: "Flip vertical", keys: "V")
+                ShortcutRow(action: "Next shape", keys: "O")
+                ShortcutRow(action: "Next camera", keys: "⌫")
+                ShortcutRow(action: "Toggle window size (Slot 1 ↔ Slot 2)", keys: "Space")
+            } header: {
+                Label("Camera window", systemImage: "viewfinder")
+            } footer: {
+                Text("Use these when the camera window is focused.")
+            }
+        }
+        .listStyle(.inset)
     }
 
     private func applyWindowPreset(_ preset: WindowSizePreset) {
