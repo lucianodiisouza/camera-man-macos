@@ -1,0 +1,389 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF_AppDelegate /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_AppDelegate /* AppDelegate.swift */; };
+		BF_AppState /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_AppState /* AppState.swift */; };
+		BF_CameraManApp /* CameraManApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CameraManApp /* CameraManApp.swift */; };
+		BF_CameraPreview /* CameraPreviewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CameraPreview /* CameraPreviewRepresentable.swift */; };
+		BF_ShortcutHandling /* ShortcutHandlingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShortcutHandling /* ShortcutHandlingView.swift */; };
+		BF_CameraService /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CameraService /* CameraService.swift */; };
+		BF_CameraView /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CameraView /* CameraView.swift */; };
+		BF_ColorComponents /* Color+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ColorComponents /* Color+Components.swift */; };
+		BF_ContentView /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ContentView /* ContentView.swift */; };
+		BF_KeyboardMonitor /* KeyboardShortcutMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */; };
+		BF_SettingsPanel /* SettingsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsPanel /* SettingsPanel.swift */; };
+		BF_ShapeType /* ShapeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShapeType /* ShapeType.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FR_AppDelegate /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FR_AppState /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		FR_CameraManApp /* CameraManApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManApp.swift; sourceTree = "<group>"; };
+		FR_CameraPreview /* CameraPreviewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewRepresentable.swift; sourceTree = "<group>"; };
+		FR_ShortcutHandling /* ShortcutHandlingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutHandlingView.swift; sourceTree = "<group>"; };
+		FR_CameraService /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		FR_CameraView /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		FR_ColorComponents /* Color+Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Components.swift"; sourceTree = "<group>"; };
+		FR_ContentView /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FR_InfoPlist /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutMonitor.swift; sourceTree = "<group>"; };
+		FR_Product /* CameraMan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraMan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FR_SettingsPanel /* SettingsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanel.swift; sourceTree = "<group>"; };
+		FR_ShapeType /* ShapeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeType.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		GP_CameraMan /* CameraMan */ = {
+			isa = PBXGroup;
+			children = (
+				FR_CameraManApp /* CameraManApp.swift */,
+				FR_AppDelegate /* AppDelegate.swift */,
+				FR_AppState /* AppState.swift */,
+				FR_InfoPlist /* Info.plist */,
+				GP_Models /* Models */,
+				GP_Extensions /* Extensions */,
+				GP_Services /* Services */,
+				GP_Views /* Views */,
+			);
+			path = CameraMan;
+			sourceTree = "<group>";
+		};
+		GP_Components /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				FR_CameraPreview /* CameraPreviewRepresentable.swift */,
+				FR_ShortcutHandling /* ShortcutHandlingView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		GP_Extensions /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				FR_ColorComponents /* Color+Components.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		GP_Models /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FR_ShapeType /* ShapeType.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		GP_Products /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FR_Product /* CameraMan.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		GP_Root = {
+			isa = PBXGroup;
+			children = (
+				GP_CameraMan /* CameraMan */,
+				GP_Products /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GP_Services /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FR_CameraService /* CameraService.swift */,
+				FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		GP_Settings /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				FR_SettingsPanel /* SettingsPanel.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		GP_Views /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FR_CameraView /* CameraView.swift */,
+				FR_ContentView /* ContentView.swift */,
+				GP_Components /* Components */,
+				GP_Settings /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TG_CameraMan /* CameraMan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL_Target /* Build configuration list for PBXNativeTarget "CameraMan" */;
+			buildPhases = (
+				BP_Sources /* Sources */,
+				BP_Resources /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CameraMan;
+			productName = CameraMan;
+			productReference = FR_Product /* CameraMan.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PRJ_Root /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 2620;
+			};
+			buildConfigurationList = CL_Project /* Build configuration list for PBXProject "CameraMan" */;
+			compatibilityVersion = "Xcode 10.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GP_Root;
+			productRefGroup = GP_Products /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				TG_CameraMan /* CameraMan */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BP_Resources /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BP_Sources /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF_CameraManApp /* CameraManApp.swift in Sources */,
+				BF_AppDelegate /* AppDelegate.swift in Sources */,
+				BF_AppState /* AppState.swift in Sources */,
+				BF_ShapeType /* ShapeType.swift in Sources */,
+				BF_ColorComponents /* Color+Components.swift in Sources */,
+				BF_CameraService /* CameraService.swift in Sources */,
+				BF_KeyboardMonitor /* KeyboardShortcutMonitor.swift in Sources */,
+				BF_CameraPreview /* CameraPreviewRepresentable.swift in Sources */,
+				BF_ShortcutHandling /* ShortcutHandlingView.swift in Sources */,
+				BF_CameraView /* CameraView.swift in Sources */,
+				BF_ContentView /* ContentView.swift in Sources */,
+				BF_SettingsPanel /* SettingsPanel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		CF_Debug_Proj /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CF_Debug_Target /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CameraMan/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cameraman.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		CF_Release_Proj /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		CF_Release_Target /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CameraMan/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cameraman.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CL_Project /* Build configuration list for PBXProject "CameraMan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF_Debug_Proj /* Debug */,
+				CF_Release_Proj /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CL_Target /* Build configuration list for PBXNativeTarget "CameraMan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF_Debug_Target /* Debug */,
+				CF_Release_Target /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PRJ_Root /* Project object */;
+}
