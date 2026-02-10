@@ -81,6 +81,13 @@ struct CameraView: View {
             .onChange(of: appState.selectedDeviceId) { _, newId in
                 cameraService.selectDevice(id: newId)
             }
+            .onChange(of: appState.isWindowVisible) { _, visible in
+                if visible {
+                    cameraService.resume()
+                } else {
+                    cameraService.pause()
+                }
+            }
             .onReceive(NotificationCenter.default.publisher(for: .statusMenuWillOpen)) { _ in
                 cameraService.refreshDeviceList {
                     NotificationCenter.default.post(name: .statusMenuShouldRebuild, object: nil)
