@@ -9,7 +9,7 @@ extension Notification.Name {
     static let statusMenuShouldRebuild = Notification.Name("statusMenuShouldRebuild")
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDelegate {
     var statusItem: NSStatusItem?
     private var statusMenu: NSMenu?
     weak var appState: AppState?
@@ -52,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         window.hasShadow = false
         window.level = .floating
         window.isMovableByWindowBackground = true
+        window.delegate = self
         // Sem botões de fechar/minimizar/zoom — só o shape e a câmera
         window.standardWindowButton(.closeButton)?.isHidden = true
         window.standardWindowButton(.miniaturizeButton)?.isHidden = true
@@ -95,7 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusMenu?.delegate = self
         statusItem?.menu = statusMenu
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "video.fill", accessibilityDescription: "Camera-Man")
+            button.image = NSImage(systemSymbolName: "viewfinder", accessibilityDescription: "Camera-Man")
             button.image?.isTemplate = true
             button.toolTip = "Camera-Man"
         }
@@ -111,13 +112,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         } else {
             // Menu mínimo: sempre mostra Settings e Quit (Settings abre via notificação)
-            menu.addItem(withTitle: "Camera-Man", action: nil, keyEquivalent: "")
-            menu.items.last?.isEnabled = false
-            menu.addItem(NSMenuItem.separator())
             let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ",")
             settingsItem.target = self
             menu.addItem(settingsItem)
-            menu.addItem(NSMenuItem.separator())
             let quitItem = NSMenuItem(title: "Quit Camera-Man", action: #selector(quit), keyEquivalent: "q")
             quitItem.target = self
             menu.addItem(quitItem)
@@ -126,9 +123,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func buildStatusMenuItems(appState: AppState) -> [NSMenuItem] {
         var items: [NSMenuItem] = []
-        items.append(NSMenuItem(title: "Camera-Man v1.0", action: nil, keyEquivalent: ""))
-        items.last?.isEnabled = false
-        items.append(NSMenuItem.separator())
 
         let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
@@ -149,6 +143,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let sizeItem = NSMenuItem(title: "Window size", action: nil, keyEquivalent: "")
         sizeItem.submenu = sizeMenu
         items.append(sizeItem)
+
+        let slot1Menu = NSMenu()
+        for preset in WindowSizePreset.allCases {
+            let item = NSMenuItem(title: preset.displayName, action: #selector(selectSpaceSlot1(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = preset
+            item.state = appState.spaceSlot1 == preset ? .on : .off
+            slot1Menu.addItem(item)
+        }
+        let slot1Item = NSMenuItem(title: "Space bar: Slot 1", action: nil, keyEquivalent: "")
+        slot1Item.submenu = slot1Menu
+        items.append(slot1Item)
+
+        let slot2Menu = NSMenu()
+        for preset in WindowSizePreset.allCases {
+            let item = NSMenuItem(title: preset.displayName, action: #selector(selectSpaceSlot2(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = preset
+            item.state = appState.spaceSlot2 == preset ? .on : .off
+            slot2Menu.addItem(item)
+        }
+        let slot2Item = NSMenuItem(title: "Space bar: Slot 2", action: nil, keyEquivalent: "")
+        slot2Item.submenu = slot2Menu
+        items.append(slot2Item)
 
         let edgeMenu = NSMenu()
         for edge in ScreenEdge.allCases {
@@ -180,7 +198,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         cameraItem.submenu = cameraMenu
         items.append(cameraItem)
 
-        items.append(NSMenuItem.separator())
         let quitItem = NSMenuItem(title: "Quit Camera-Man", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         items.append(quitItem)
@@ -200,41 +217,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         appState?.showResetConfirmation = true
     }
 
-    @objc private func selectWindowSize(_ sender: NSMenuItem) {
+    @objc private func selectSpaceSlot1(_ sender: NSMenuItem) {
         guard let preset = sender.representedObject as? WindowSizePreset else { return }
-        appState?.windowSizePreset = preset
+        appState?.spaceSlot1 = preset
         appState?.saveToUserDefaults()
-        if let window = NSApplication.shared.windows.first(where: { $0.isVisible }) {
-            let frame = window.frame
-            // Preserve top-left corner (macOS: origin is bottom-left, so top = origin.y + height)
-            let newSize = CGSize(width: preset.width, height: preset.height)
-            let newOrigin = CGPoint(
-                x: frame.minX,
-                y: (frame.origin.y + frame.height) - newSize.height
-            )
-            window.setFrame(CGRect(origin: newOrigin, size: newSize), display: true)
-        }
+    }
+
+    @objc private func selectSpaceSlot2(_ sender: NSMenuItem) {
+        guard let preset = sender.representedObject as? WindowSizePreset else { return }
+        appState?.spaceSlot2 = preset
+        appState?.saveToUserDefaults()
+    }
+
+    @objc private func selectWindowSize(_ sender: NSMenuItem) {
+        guard let preset = sender.representedObject as? WindowSizePreset,
+              let appState = appState else { return }
+        appState.setWindowSizePreset(preset)
+        guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }),
+              let screen = window.screen ?? NSScreen.main else { return }
+        let visibleFrame = screen.visibleFrame
+        let newSize = preset.size(visibleFrame: visibleFrame)
+        let origin = appState.originToApply(for: preset, visibleFrame: visibleFrame, windowSize: newSize)
+        window.setFrame(CGRect(origin: origin, size: newSize), display: true)
     }
 
     @objc private func selectScreenEdge(_ sender: NSMenuItem) {
-        guard let edge = sender.representedObject as? ScreenEdge else { return }
-        appState?.screenEdge = edge
-        appState?.saveToUserDefaults()
+        guard let edge = sender.representedObject as? ScreenEdge, let appState = appState else { return }
+        appState.setScreenEdge(edge)
         guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }),
               let screen = window.screen ?? NSScreen.main else { return }
-        let frame = screen.visibleFrame
-        var newOrigin: CGPoint
-        switch edge {
-        case .topLeft:
-            newOrigin = CGPoint(x: frame.minX, y: frame.maxY - window.frame.height)
-        case .topRight:
-            newOrigin = CGPoint(x: frame.maxX - window.frame.width, y: frame.maxY - window.frame.height)
-        case .bottomRight:
-            newOrigin = CGPoint(x: frame.maxX - window.frame.width, y: frame.minY)
-        case .bottomLeft:
-            newOrigin = CGPoint(x: frame.minX, y: frame.minY)
-        }
-        window.setFrameOrigin(newOrigin)
+        let preset = appState.windowSizePreset
+        let visibleFrame = screen.visibleFrame
+        let newSize = preset.size(visibleFrame: visibleFrame)
+        let origin = appState.originToApply(for: preset, visibleFrame: visibleFrame, windowSize: newSize)
+        window.setFrame(CGRect(origin: origin, size: newSize), display: true)
+    }
+
+    func windowDidMove(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow,
+              window.isVisible,
+              let appState = appState else { return }
+        appState.setOriginForCurrentPreset(window.frame.origin)
     }
 
     @objc private func selectCamera(_ sender: NSMenuItem) {
