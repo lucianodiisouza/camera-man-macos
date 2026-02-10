@@ -23,7 +23,23 @@ struct CameraView: View {
                         .blur(radius: appState.borderShadowRadius)
                 }
 
-                if let layer = previewLayer {
+                if let frame = cameraService.currentFrame {
+                    Group {
+                        FilteredCameraPreviewView(cgImage: frame)
+                            .scaleEffect(
+                                x: appState.flipHorizontal ? -1 : 1,
+                                y: appState.flipVertical ? -1 : 1,
+                                anchor: .center
+                            )
+                            .scaleEffect(appState.scale)
+                            .offset(
+                                x: size.width * (appState.offsetX / 100),
+                                y: size.height * (-appState.offsetY / 100)
+                            )
+                    }
+                    .frame(width: size.width, height: size.height)
+                    .clipShape(shapeView)
+                } else if let layer = previewLayer {
                     Group {
                         CameraPreviewRepresentable(layer: layer)
                             .scaleEffect(

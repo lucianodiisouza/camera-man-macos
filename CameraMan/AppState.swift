@@ -30,6 +30,11 @@ final class AppState: ObservableObject {
     @Published var borderShadowRadius: CGFloat = 0
     @Published var borderShadowColor: Color = .black.opacity(0.5)
 
+    // MARK: - Color correction (aplicado ao vídeo em tempo real)
+    @Published var brightness: Double = 0
+    @Published var contrast: Double = 1.0
+    @Published var saturation: Double = 1.0
+
     // MARK: - Window
     @Published var windowSizePreset: WindowSizePreset = .md
     @Published var screenEdge: ScreenEdge = .topLeft
@@ -54,6 +59,9 @@ final class AppState: ObservableObject {
     static let borderWidthRange: ClosedRange<CGFloat> = 0...20
     static let borderShadowRadiusRange: ClosedRange<CGFloat> = 0...24
     static let shapeCornerRadiusRange: ClosedRange<CGFloat> = 0...150
+    static let brightnessRange: ClosedRange<Double> = -0.5...0.5
+    static let contrastRange: ClosedRange<Double> = 0.5...2.0
+    static let saturationRange: ClosedRange<Double> = 0...2.0
 
     private let defaults = UserDefaults.standard
     private let defaultsKeys = DefaultsKeys()
@@ -78,6 +86,9 @@ final class AppState: ObservableObject {
         let borderGradientEndHex = "borderGradientEndHex"
         let borderShadowRadius = "borderShadowRadius"
         let borderShadowColorHex = "borderShadowColorHex"
+        let brightness = "brightness"
+        let contrast = "contrast"
+        let saturation = "saturation"
         let windowSizePreset = "windowSizePreset"
         let screenEdge = "screenEdge"
         func screenEdgeKey(_ preset: String) -> String { "screenEdge_\(preset)" }
@@ -140,6 +151,9 @@ final class AppState: ObservableObject {
         if let hex = defaults.string(forKey: defaultsKeys.borderShadowColorHex) {
             borderShadowColor = Color(hex: hex)
         }
+        brightness = defaults.object(forKey: defaultsKeys.brightness) as? Double ?? 0
+        contrast = defaults.object(forKey: defaultsKeys.contrast) as? Double ?? 1.0
+        saturation = defaults.object(forKey: defaultsKeys.saturation) as? Double ?? 1.0
         if let raw = defaults.string(forKey: defaultsKeys.windowSizePreset) {
             if let preset = WindowSizePreset(rawValue: raw) {
                 windowSizePreset = preset
@@ -209,6 +223,9 @@ final class AppState: ObservableObject {
         defaults.set(borderGradientEndColor.hex, forKey: defaultsKeys.borderGradientEndHex)
         defaults.set(Double(borderShadowRadius), forKey: defaultsKeys.borderShadowRadius)
         defaults.set(borderShadowColor.hex, forKey: defaultsKeys.borderShadowColorHex)
+        defaults.set(brightness, forKey: defaultsKeys.brightness)
+        defaults.set(contrast, forKey: defaultsKeys.contrast)
+        defaults.set(saturation, forKey: defaultsKeys.saturation)
         defaults.set(windowSizePreset.rawValue, forKey: defaultsKeys.windowSizePreset)
         defaults.set(screenEdge.rawValue, forKey: defaultsKeys.screenEdge)
         for preset in WindowSizePreset.allCases {
@@ -248,6 +265,9 @@ final class AppState: ObservableObject {
         showShadow = false
         borderShadowRadius = 0
         borderShadowColor = .black.opacity(0.5)
+        brightness = 0
+        contrast = 1.0
+        saturation = 1.0
         windowSizePreset = .md
         screenEdge = .topLeft
         screenEdgeForPreset = [:]

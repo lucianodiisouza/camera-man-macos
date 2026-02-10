@@ -31,6 +31,7 @@ struct SettingsPanel: View {
                     positionSection
                     zoomSection
                     flipSection
+                    colorCorrectionSection
                     borderSection
                     windowSection
                     aboutSection
@@ -150,6 +151,33 @@ struct SettingsPanel: View {
                 Label("Flip vertical", systemImage: "arrow.up.and.down")
             }
             .onChange(of: appState.flipVertical) { _, _ in appState.saveToUserDefaults() }
+        }
+    }
+
+    private var colorCorrectionSection: some View {
+        Section {
+            HStack {
+                Label("Brightness", systemImage: "sun.max")
+                Slider(value: $appState.brightness, in: AppState.brightnessRange, step: 0.05)
+                    .onChange(of: appState.brightness) { _, _ in appState.saveToUserDefaults() }
+                Text(String(format: "%.2f", appState.brightness)).frame(width: 40, alignment: .trailing)
+            }
+            HStack {
+                Label("Contrast", systemImage: "circle.lefthalf.filled")
+                Slider(value: $appState.contrast, in: AppState.contrastRange, step: 0.1)
+                    .onChange(of: appState.contrast) { _, _ in appState.saveToUserDefaults() }
+                Text(String(format: "%.1f", appState.contrast)).frame(width: 40, alignment: .trailing)
+            }
+            HStack {
+                Label("Saturation", systemImage: "drop")
+                Slider(value: $appState.saturation, in: AppState.saturationRange, step: 0.1)
+                    .onChange(of: appState.saturation) { _, _ in appState.saveToUserDefaults() }
+                Text(String(format: "%.1f", appState.saturation)).frame(width: 40, alignment: .trailing)
+            }
+        } header: {
+            Text("Color correction")
+        } footer: {
+            Text("Applied to the camera preview in real time.")
         }
     }
 

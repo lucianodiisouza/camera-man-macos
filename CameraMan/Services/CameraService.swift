@@ -1,14 +1,19 @@
 import AVFoundation
 import Combine
+import CoreImage
 import SwiftUI
 
-final class CameraService: NSObject, ObservableObject {
+final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "camera.session")
+    private let videoOutputQueue = DispatchQueue(label: "camera.videoOutput")
     private var currentInput: AVCaptureDeviceInput?
     private var deviceDiscoverySession: AVCaptureDevice.DiscoverySession?
+    private lazy var ciContext: CIContext = CIContext(options: [.useSoftwareRenderer: false])
 
     @Published var previewLayer: AVCaptureVideoPreviewLayer?
+    /// Frame atual com correção de cor aplicada (nil até o primeiro frame).
+    @Published var currentFrame: CGImage?
     @Published var videoDevices: [CameraDevice] = []
     @Published var status: CameraStatus = .loading
 
@@ -34,10 +39,38 @@ final class CameraService: NSObject, ObservableObject {
 
     private func configureSession() {
         session.beginConfiguration()
-        // .medium uses less CPU and RAM than .high; sufficient for preview-only (no recording).
         session.sessionPreset = .medium
+
+        let videoOutput = AVCaptureVideoDataOutput()
+        videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        videoOutput.setSampleBufferDelegate(self, queue: videoOutputQueue)
+        videoOutput.alwaysDiscardsLateVideoFrames = true
+        if session.canAddOutput(videoOutput) {
+            session.addOutput(videoOutput)
+        }
+
         session.commitConfiguration()
         refreshDeviceList()
+    }
+
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let b = appState?.brightness ?? 0
+        let c = appState?.contrast ?? 1.0
+        let s = appState?.saturation ?? 1.0
+        let inputImage = CIImage(cvPixelBuffer: pixelBuffer)
+        guard let filter = CIFilter(name: "CIColorControls") else { return }
+        filter.setValue(inputImage, forKey: kCIInputImageKey)
+        filter.setValue(b, forKey: kCIInputBrightnessKey)
+        filter.setValue(c, forKey: kCIInputContrastKey)
+        filter.setValue(s, forKey: kCIInputSaturationKey)
+        guard let outputImage = filter.outputImage else { return }
+        let extent = outputImage.extent
+        guard extent.width > 0, extent.height > 0 else { return }
+        guard let cgImage = ciContext.createCGImage(outputImage, from: extent) else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.currentFrame = cgImage
+        }
     }
 
     func refreshDeviceList(completion: (() -> Void)? = nil) {

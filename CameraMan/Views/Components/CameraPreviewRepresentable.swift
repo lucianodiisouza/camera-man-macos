@@ -1,6 +1,18 @@
+import AppKit
 import AVFoundation
 import QuartzCore
 import SwiftUI
+
+/// Exibe um frame de vídeo (CGImage) com aspect fill — usado quando correção de cor está ativa.
+struct FilteredCameraPreviewView: View {
+    let cgImage: CGImage
+
+    var body: some View {
+        Image(nsImage: NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height)))
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+    }
+}
 
 struct CameraPreviewRepresentable: NSViewRepresentable {
     let layer: AVCaptureVideoPreviewLayer
