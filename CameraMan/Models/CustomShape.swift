@@ -92,6 +92,48 @@ struct CustomShape: Identifiable, Codable, Equatable {
             CGPoint(x: origin.x + p.x * scaleX, y: origin.y + (1 - p.y) * scaleY)
         }
 
+        func addClosedPathWithRoundedCorners(to path: inout Path, points: [CGPoint], pt: (CGPoint) -> CGPoint) {
+            let n = points.count
+            guard n >= 2 else { return }
+            // Corner radius in normalized 0...1 space (suave, proporcional ao tamanho do shape)
+            let rNorm: CGFloat = 0.045
+            func len(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+                hypot(b.x - a.x, b.y - a.y)
+            }
+            func dir(_ from: CGPoint, _ to: CGPoint) -> (CGFloat, CGFloat) {
+                let d = len(from, to)
+                guard d > 1e-6 else { return (0, 0) }
+                return ((to.x - from.x) / d, (to.y - from.y) / d)
+            }
+            func approach(to p: CGPoint, from prev: CGPoint, radius: CGFloat) -> CGPoint {
+                let (dx, dy) = dir(prev, p)
+                let d = min(radius, len(prev, p) / 2)
+                return CGPoint(x: p.x - dx * d, y: p.y - dy * d)
+            }
+            func exit(from p: CGPoint, toward next: CGPoint, radius: CGFloat) -> CGPoint {
+                let (dx, dy) = dir(p, next)
+                let d = min(radius, len(p, next) / 2)
+                return CGPoint(x: p.x + dx * d, y: p.y + dy * d)
+            }
+            let cur = points[0]
+            let next = points[1]
+            path.move(to: pt(exit(from: cur, toward: next, radius: rNorm)))
+            for i in 1..<n {
+                let prev = points[i - 1]
+                let cur = points[i]
+                let next = points[(i + 1) % n]
+                let a = approach(to: cur, from: prev, radius: rNorm)
+                let b = exit(from: cur, toward: next, radius: rNorm)
+                path.addLine(to: pt(a))
+                path.addQuadCurve(to: pt(b), control: pt(cur))
+            }
+            let a0 = approach(to: points[0], from: points[n - 1], radius: rNorm)
+            let b0 = exit(from: points[0], toward: points[1], radius: rNorm)
+            path.addLine(to: pt(a0))
+            path.addQuadCurve(to: pt(b0), control: pt(points[0]))
+            path.closeSubpath()
+        }
+
         if smoothness > 0.01, points.count >= 3, let last = points.last {
             // Catmull-Rom style smooth curve through points (closed). Higher tension = rounder corners.
             let closed = [last] + points + [points[0], points[1], points[2]]
@@ -113,11 +155,8 @@ struct CustomShape: Identifiable, Codable, Equatable {
                 path.addCurve(to: pt(p2), control1: pt(cp1), control2: pt(cp2))
             }
         } else {
-            path.move(to: pt(points[0]))
-            for i in 1..<points.count {
-                path.addLine(to: pt(points[i]))
-            }
-            path.closeSubpath()
+            // Rounded corners: at each vertex add a small arc so no sharp "recorte" look.
+            addClosedPathWithRoundedCorners(to: &path, points: points, pt: pt)
         }
         return path
     }
