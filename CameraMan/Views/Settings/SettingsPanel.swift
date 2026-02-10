@@ -26,11 +26,6 @@ struct SettingsPanel: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Restore defaults", role: .destructive) {
-                        appState.showResetConfirmation = true
-                    }
-                }
             }
         }
         .frame(minWidth: 400, minHeight: 500)
@@ -211,7 +206,9 @@ struct SettingsPanel: View {
                 Text("1.0.0")
                     .foregroundStyle(.secondary)
             }
-            Link("Source code", destination: URL(string: "https://github.com/camera-man/camera-man")!)
+            Button("Restore defaults", role: .destructive) {
+                appState.showResetConfirmation = true
+            }
         } header: {
             Text("About")
         }
@@ -220,10 +217,12 @@ struct SettingsPanel: View {
     private func resizeMainWindow(to preset: WindowSizePreset) {
         guard let window = NSApplication.shared.windows.first(where: { $0.isVisible }) else { return }
         let frame = window.frame
-        let centerX = frame.midX
-        let centerY = frame.midY
+        // Preserve top-left corner (macOS: origin is bottom-left, so top = origin.y + height)
         let newSize = CGSize(width: preset.width, height: preset.height)
-        let newOrigin = CGPoint(x: centerX - newSize.width / 2, y: centerY - newSize.height / 2)
+        let newOrigin = CGPoint(
+            x: frame.minX,
+            y: (frame.origin.y + frame.height) - newSize.height
+        )
         window.setFrame(CGRect(origin: newOrigin, size: newSize), display: true)
     }
 
