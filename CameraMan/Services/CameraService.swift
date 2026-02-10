@@ -183,8 +183,10 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
     }
 
     func requestPermissionAndSetup(completion: (() -> Void)? = nil) {
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        switch authStatus {
         case .authorized:
+            appState?.didGrantCameraPermission()
             if videoDevices.isEmpty {
                 refreshDeviceList { [weak self] in
                     self?.selectDeviceAfterRefresh()
@@ -195,14 +197,17 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
                 completion?()
             }
         case .notDetermined:
+            appState?.cameraPermissionGranted = nil
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
                 DispatchQueue.main.async {
                     if granted {
+                        self?.appState?.didGrantCameraPermission()
                         self?.refreshDeviceList { [weak self] in
                             self?.selectDeviceAfterRefresh()
                             completion?()
                         }
                     } else {
+                        self?.appState?.cameraPermissionGranted = false
                         self?.status = .notFound
                         self?.appState?.cameraStatus = .notFound
                         completion?()
@@ -210,10 +215,12 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
                 }
             }
         case .denied, .restricted:
+            appState?.cameraPermissionGranted = false
             status = .notFound
             appState?.cameraStatus = .notFound
             completion?()
         @unknown default:
+            appState?.cameraPermissionGranted = false
             status = .notFound
             appState?.cameraStatus = .notFound
             completion?()
