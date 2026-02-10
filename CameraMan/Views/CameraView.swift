@@ -12,18 +12,13 @@ struct CameraView: View {
             let size = geo.size
             ZStack {
                 // 1) External shadow only (behind preview); independent of border — can be shadow-only
-                // Same scale/offset as preview so shadow follows zoom and position
+                // Drawn on the clip shape so it always matches the visible camera outline (including when zoom < 1)
                 if appState.showShadow, appState.borderShadowRadius > 0 {
                     let shadowStrokeWidth: CGFloat = (appState.showBorder && appState.borderWidth > 0)
                         ? appState.borderWidth + 2 * appState.borderShadowRadius
                         : 2 * appState.borderShadowRadius
                     shapeView
                         .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
-                        .scaleEffect(appState.scale)
-                        .offset(
-                            x: size.width * (appState.offsetX / 100),
-                            y: size.height * (-appState.offsetY / 100)
-                        )
                         .compositingGroup()
                         .blur(radius: appState.borderShadowRadius)
                 }
@@ -67,9 +62,9 @@ struct CameraView: View {
                         }
                 }
 
-                // 3) Border stroke on top (independent of shadow); same scale/offset as preview so border follows zoom and position
+                // 3) Border stroke on top (independent of shadow); drawn on the clip shape so it always matches the visible camera outline (including when zoom < 1)
                 if appState.showBorder, appState.borderWidth > 0 {
-                    borderStrokeView(size: size)
+                    borderStrokeView()
                 }
             }
             .contentShape(shapeView)
@@ -100,12 +95,12 @@ struct CameraView: View {
     }
 
     /// Border stroke only (gradient or solid). Shadow is drawn as a separate layer behind the preview so it stays external.
-    /// Uses same scale/offset as preview so border follows zoom and position.
+    /// Drawn on the clip shape so border always matches the visible camera outline (including when zoom < 1).
     @ViewBuilder
-    private func borderStrokeView(size: CGSize) -> some View {
+    private func borderStrokeView() -> some View {
         let shape = shapeView
         let lineWidth = appState.borderWidth
-        let strokeContent = Group {
+        Group {
             if appState.borderUseGradient {
                 shape.stroke(
                     LinearGradient(
@@ -119,11 +114,5 @@ struct CameraView: View {
                 shape.stroke(appState.borderColor, lineWidth: lineWidth)
             }
         }
-        strokeContent
-            .scaleEffect(appState.scale)
-            .offset(
-                x: size.width * (appState.offsetX / 100),
-                y: size.height * (-appState.offsetY / 100)
-            )
     }
 }
