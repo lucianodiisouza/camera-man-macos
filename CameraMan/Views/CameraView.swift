@@ -33,8 +33,8 @@ struct CameraView: View {
                             )
                             .scaleEffect(appState.scale)
                             .offset(
-                                x: WindowSizePreset.small.width * (appState.offsetX / 100),
-                                y: WindowSizePreset.small.height * (-appState.offsetY / 100)
+                                x: size.width * (appState.offsetX / 100),
+                                y: size.height * (-appState.offsetY / 100)
                             )
                     }
                     .frame(width: size.width, height: size.height)

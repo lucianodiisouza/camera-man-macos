@@ -10,10 +10,10 @@ struct CameraManApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
-                .frame(minWidth: 300, minHeight: 300)
+                .frame(minWidth: 200, minHeight: 200)
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 300, height: 300)
+        .defaultSize(width: 400, height: 400)
         .commands {
             // Settings no menu da app (menu bar) para poder abrir clicando no nome do app
             CommandGroup(replacing: .appSettings) {
