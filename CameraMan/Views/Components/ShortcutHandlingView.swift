@@ -4,13 +4,39 @@ import SwiftUI
 /// Handles shortcut keys in the responder chain so the system does not play the "unhandled key" beep.
 final class ShortcutHandlingNSView: NSView {
     weak var appState: AppState?
+    private var windowObserver: NSObjectProtocol?
 
     override var acceptsFirstResponder: Bool { true }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if window != nil {
-            window?.makeFirstResponder(self)
+        if let w = window {
+            // Defer so we run after SwiftUI's layout and win first responder
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, self.window == w else { return }
+                w.makeFirstResponder(self)
+            }
+            setupWindowObserver(window: w)
+        } else {
+            windowObserver = nil
+        }
+    }
+
+    private func setupWindowObserver(window: NSWindow) {
+        windowObserver = nil
+        windowObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self, let w = self.window, w.isKeyWindow else { return }
+            w.makeFirstResponder(self)
+        }
+    }
+
+    deinit {
+        if let o = windowObserver {
+            NotificationCenter.default.removeObserver(o)
         }
     }
 
