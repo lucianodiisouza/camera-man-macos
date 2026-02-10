@@ -98,7 +98,11 @@ struct CameraView: View {
     }
 
     private var shapeView: some Shape {
-        ShapeTypeShape(shapeType: appState.shapeType, cornerRadius: appState.shapeCornerRadius)
+        ShapeTypeShape(
+            shapeType: appState.shapeType,
+            cornerRadius: appState.shapeCornerRadius,
+            customShape: appState.currentCustomShape
+        )
     }
 
     /// Border stroke only (gradient or solid). Shadow is drawn as a separate layer behind the preview so it stays external.

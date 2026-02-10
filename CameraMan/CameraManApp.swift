@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 @main
 struct CameraManApp: App {
@@ -24,13 +25,14 @@ struct CameraManApp: App {
             }
         }
 
+        let settingsWidth = max(400, (NSScreen.main?.visibleFrame.width ?? 1280) / 3)
         Window("Settings", id: "settings") {
             SettingsPanel()
                 .environmentObject(appState)
                 .onDisappear { appState.showSettings = false }
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 400, height: 500)
+        .defaultSize(width: settingsWidth, height: 500)
         .defaultPosition(.center)
     }
 }
