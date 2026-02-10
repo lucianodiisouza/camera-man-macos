@@ -1,0 +1,129 @@
+import SwiftUI
+import AVFoundation
+import QuartzCore
+
+struct CameraView: View {
+    @EnvironmentObject var appState: AppState
+    @StateObject private var cameraService = CameraService()
+    @State private var previewLayer: AVCaptureVideoPreviewLayer?
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            ZStack {
+                // 1) External shadow only (behind preview); independent of border — can be shadow-only
+                // Same scale/offset as preview so shadow follows zoom and position
+                if appState.showShadow, appState.borderShadowRadius > 0 {
+                    let shadowStrokeWidth: CGFloat = (appState.showBorder && appState.borderWidth > 0)
+                        ? appState.borderWidth + 2 * appState.borderShadowRadius
+                        : 2 * appState.borderShadowRadius
+                    shapeView
+                        .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
+                        .scaleEffect(appState.scale)
+                        .offset(
+                            x: size.width * (appState.offsetX / 100),
+                            y: size.height * (-appState.offsetY / 100)
+                        )
+                        .compositingGroup()
+                        .blur(radius: appState.borderShadowRadius)
+                }
+
+                if let layer = previewLayer {
+                    Group {
+                        CameraPreviewRepresentable(layer: layer)
+                            .scaleEffect(
+                                x: appState.flipHorizontal ? -1 : 1,
+                                y: appState.flipVertical ? -1 : 1,
+                                anchor: .center
+                            )
+                            .scaleEffect(appState.scale)
+                            .offset(
+                                x: size.width * (appState.offsetX / 100),
+                                y: size.height * (-appState.offsetY / 100)
+                            )
+                    }
+                    .frame(width: size.width, height: size.height)
+                    .clipShape(shapeView)
+                } else {
+                    Color.black
+                        .overlay {
+                            if appState.cameraStatus == .loading {
+                                ProgressView()
+                                    .scaleEffect(1.5)
+                            } else if appState.cameraStatus == .notFound {
+                                VStack(spacing: 12) {
+                                    Image(systemName: "video.slash")
+                                        .font(.system(size: 48))
+                                        .foregroundStyle(.secondary)
+                                    Text("No camera found")
+                                        .font(.headline)
+                                    Text("Connect a camera or check permissions in System Settings.")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(24)
+                            }
+                        }
+                }
+
+                // 3) Border stroke on top (independent of shadow); same scale/offset as preview so border follows zoom and position
+                if appState.showBorder, appState.borderWidth > 0 {
+                    borderStrokeView(size: size)
+                }
+            }
+            .contentShape(shapeView)
+            .onAppear {
+                cameraService.appState = appState
+                cameraService.requestPermissionAndSetup { [weak cameraService] in
+                    guard let cameraService = cameraService else { return }
+                    guard cameraService.status != .notFound else { return }
+                    let preferredId = appState.selectedDeviceId
+                    let deviceIds = cameraService.videoDevices.map(\.id)
+                    previewLayer = cameraService.startPreviewLayer(size: geo.size, preferredDeviceId: preferredId, deviceIds: deviceIds)
+                }
+            }
+            .onChange(of: appState.selectedDeviceId) { _, newId in
+                cameraService.selectDevice(id: newId)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .statusMenuWillOpen)) { _ in
+                cameraService.refreshDeviceList {
+                    NotificationCenter.default.post(name: .statusMenuShouldRebuild, object: nil)
+                }
+            }
+        }
+        .background(Color.clear)
+    }
+
+    private var shapeView: some Shape {
+        ShapeTypeShape(shapeType: appState.shapeType, cornerRadius: appState.shapeCornerRadius)
+    }
+
+    /// Border stroke only (gradient or solid). Shadow is drawn as a separate layer behind the preview so it stays external.
+    /// Uses same scale/offset as preview so border follows zoom and position.
+    @ViewBuilder
+    private func borderStrokeView(size: CGSize) -> some View {
+        let shape = shapeView
+        let lineWidth = appState.borderWidth
+        let strokeContent = Group {
+            if appState.borderUseGradient {
+                shape.stroke(
+                    LinearGradient(
+                        colors: [appState.borderGradientStartColor, appState.borderGradientEndColor],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: lineWidth
+                )
+            } else {
+                shape.stroke(appState.borderColor, lineWidth: lineWidth)
+            }
+        }
+        strokeContent
+            .scaleEffect(appState.scale)
+            .offset(
+                x: size.width * (appState.offsetX / 100),
+                y: size.height * (-appState.offsetY / 100)
+            )
+    }
+}
