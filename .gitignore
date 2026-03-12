@@ -8,3 +8,6 @@ xcuserdata/
 # Build
 build/
 DerivedData/
+
+
+*.dmg
