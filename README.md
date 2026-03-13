@@ -65,6 +65,14 @@ This is expected for apps that are not signed with an Apple Developer account. T
 - **Settings**: Click the gear icon on the preview or use **⌘,**. Use the status bar icon for quick access when the window is in the background.
 - **Keyboard shortcuts** (with window focused): Arrows (position), +/− (zoom da câmera), R (reset zoom), / (flip), O (cycle shape), Backspace (next camera), Space (toggle window size).
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards. Security issues: [SECURITY.md](SECURITY.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
 ## License
 
 MIT
