@@ -35,6 +35,12 @@ open build/Release/CameraMan.app
 
 ## Creating a DMG for distribution
 
+**Prerequisites:** install [`create-dmg`](https://github.com/create-dmg/create-dmg) (first time only):
+
+```bash
+brew install create-dmg
+```
+
 To build a Release version and create a DMG that users can install (drag to Applications):
 
 ```bash
