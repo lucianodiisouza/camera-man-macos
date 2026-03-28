@@ -15,8 +15,20 @@ APP_NAME="CameraMan"
 DMG_NAME="${APP_NAME}-${VERSION}"
 BUILD_DIR="build"
 APP_PATH="${BUILD_DIR}/Build/Products/Release/${APP_NAME}.app"
-DMG_TMP="dmg-temp"
+BG_IMAGE="dmg-background.png"
 
+# ── 1. Check for create-dmg ──────────────────────────────────────────────────
+if ! command -v create-dmg &>/dev/null; then
+  echo "Error: 'create-dmg' not found. Install it with:"
+  echo "  brew install create-dmg"
+  exit 1
+fi
+
+# ── 2. Generate background image ────────────────────────────────────────────
+echo "→ Generating DMG background..."
+python3 dmg-bg.py
+
+# ── 3. Build app ─────────────────────────────────────────────────────────────
 echo "→ Building ${APP_NAME} (Release)..."
 xcodebuild -scheme CameraMan \
   -configuration Release \
@@ -29,24 +41,21 @@ if [[ ! -d "$APP_PATH" ]]; then
   exit 1
 fi
 
-echo "→ Preparing DMG contents..."
-rm -rf "$DMG_TMP"
-mkdir -p "$DMG_TMP"
-cp -R "$APP_PATH" "$DMG_TMP/"
-ln -s /Applications "$DMG_TMP/Applications"
-
+# ── 4. Create DMG ────────────────────────────────────────────────────────────
 echo "→ Creating ${DMG_NAME}.dmg..."
 rm -f "${DMG_NAME}.dmg"
-hdiutil create \
-  -volname "$APP_NAME" \
-  -srcfolder "$DMG_TMP" \
-  -ov \
-  -format UDZO \
-  "${DMG_NAME}.dmg"
 
-echo "→ Cleaning up..."
-rm -rf "$DMG_TMP"
+create-dmg \
+  --volname "$APP_NAME" \
+  --background "$BG_IMAGE" \
+  --window-pos 200 120 \
+  --window-size 640 400 \
+  --icon-size 80 \
+  --icon "${APP_NAME}.app" 160 185 \
+  --hide-extension "${APP_NAME}.app" \
+  --app-drop-link 480 185 \
+  "${DMG_NAME}.dmg" \
+  "${BUILD_DIR}/Build/Products/Release/"
 
 echo ""
 echo "Done. DMG ready: ${DMG_NAME}.dmg"
-echo "You can upload this file for users to install (drag to Applications)."
