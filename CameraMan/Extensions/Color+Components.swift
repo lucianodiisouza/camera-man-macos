@@ -4,10 +4,11 @@ import AppKit
 #endif
 
 extension Color {
-    /// Persist color as hex. When saving we only store if we have a way to get components (e.g. from ColorPicker callback); for now we store a default.
+    /// Persist color as #AARRGGBB (sRGB), so a color with transparency (e.g. the shadow) survives a relaunch.
     var hex: String {
-        // SwiftUI Color doesn't expose components; store default. Can be extended later with platform-specific code.
-        return "#007AFF"
+        guard let c = NSColor(self).usingColorSpace(.sRGB) else { return "#FF007AFF" }
+        func byte(_ v: CGFloat) -> Int { Int((min(max(v, 0), 1) * 255).rounded()) }
+        return String(format: "#%02X%02X%02X%02X", byte(c.alphaComponent), byte(c.redComponent), byte(c.greenComponent), byte(c.blueComponent))
     }
 
     init(hex: String) {

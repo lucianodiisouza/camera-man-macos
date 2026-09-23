@@ -5,12 +5,8 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
     case square
     case verticalRectangle  // 9:16
     case horizontalRectangle // 16:9
-    case custom
 
     var id: String { rawValue }
-
-    /// Built-in shapes only (for picker and cycling).
-    static var builtinCases: [ShapeType] { [.circle, .square, .verticalRectangle, .horizontalRectangle] }
 
     var displayName: String {
         switch self {
@@ -18,24 +14,38 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
         case .square: return "Square"
         case .verticalRectangle: return "Vertical Rectangle (9:16)"
         case .horizontalRectangle: return "Horizontal Rectangle (16:9)"
-        case .custom: return "Custom"
         }
     }
 
-    func shape(cornerRadius: CGFloat = 20, customShape: CustomShape? = nil) -> ShapeTypeShape {
-        ShapeTypeShape(shapeType: self, cornerRadius: cornerRadius, customShape: customShape)
+    /// Fits under a preview card in the settings window.
+    var shortName: String {
+        switch self {
+        case .circle: return "Circle"
+        case .square: return "Square"
+        case .verticalRectangle: return "Vertical 9:16"
+        case .horizontalRectangle: return "Horizontal 16:9"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .circle: return "circle"
+        case .square: return "square"
+        case .verticalRectangle: return "rectangle.portrait"
+        case .horizontalRectangle: return "rectangle"
+        }
+    }
+
+    func shape(cornerRadius: CGFloat = 20) -> ShapeTypeShape {
+        ShapeTypeShape(shapeType: self, cornerRadius: cornerRadius)
     }
 }
 
 struct ShapeTypeShape: Shape {
     var shapeType: ShapeType
     var cornerRadius: CGFloat = 20
-    var customShape: CustomShape? = nil
 
     func path(in rect: CGRect) -> Path {
-        if shapeType == .custom, let custom = customShape {
-            return custom.path(in: rect)
-        }
         switch shapeType {
         case .circle:
             let side = min(rect.width, rect.height)
@@ -52,8 +62,6 @@ struct ShapeTypeShape: Shape {
         case .horizontalRectangle:
             let r = aspectRatioRect(in: rect, widthRatio: 16, heightRatio: 9)
             return roundedRectPath(in: r, cornerRadius: cornerRadius)
-        case .custom:
-            return Path()
         }
     }
 

@@ -135,7 +135,7 @@ struct CameraView: View {
                             .foregroundStyle(.secondary)
                         Text("Camera access was denied")
                             .font(.headline)
-                        Text("Open System Settings → Privacy & Security → Camera to allow Camera-Man.")
+                        Text("Open System Settings → Privacy & Security → Camera to allow CameraMan.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -160,11 +160,7 @@ struct CameraView: View {
     }
 
     private var shapeView: some Shape {
-        ShapeTypeShape(
-            shapeType: appState.shapeType,
-            cornerRadius: appState.shapeCornerRadius,
-            customShape: appState.currentCustomShape
-        )
+        ShapeTypeShape(shapeType: appState.shapeType, cornerRadius: appState.shapeCornerRadius)
     }
 
     /// Border stroke only (gradient or solid). Shadow is drawn as a separate layer behind the preview so it stays external.

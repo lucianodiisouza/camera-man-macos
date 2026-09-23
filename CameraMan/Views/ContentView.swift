@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @Environment(\.openWindow) private var openWindow
     @StateObject private var keyboardMonitor = KeyboardShortcutMonitor()
 
     /// Padding so border and/or shadow fit inside the window and shadow blur is not clipped.
@@ -42,12 +41,6 @@ struct ContentView: View {
         .onAppear {
             (NSApplication.shared.delegate as? AppDelegate)?.appState = appState
             keyboardMonitor.install(appState: appState)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in
-            appState.showSettings = true
-        }
-        .onChange(of: appState.showSettings) { _, newValue in
-            if newValue { openWindow(id: "settings") }
         }
     }
 }

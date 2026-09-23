@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera-Man needs camera access to show your video preview with custom shapes.</string>
+	<string>CameraMan needs camera access to show your video preview in a floating window.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>NSPrincipalClass</key>

@@ -19,20 +19,10 @@ struct CameraManApp: App {
             // Settings no menu da app (menu bar) para poder abrir clicando no nome do app
             CommandGroup(replacing: .appSettings) {
                 Button("Settings...") {
-                    appState.showSettings = true
+                    appDelegate.showSettings()
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
         }
-
-        let settingsWidth = max(400, (NSScreen.main?.visibleFrame.width ?? 1280) / 3)
-        Window("Settings", id: "settings") {
-            SettingsPanel()
-                .environmentObject(appState)
-                .onDisappear { appState.showSettings = false }
-        }
-        .windowResizability(.contentSize)
-        .defaultSize(width: settingsWidth, height: 500)
-        .defaultPosition(.center)
     }
 }

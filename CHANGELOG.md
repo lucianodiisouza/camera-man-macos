@@ -8,6 +8,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - (Add new changes here before releasing)
 
+## [1.1.0] - 2026-09-22
+
+### Added
+
+- New settings window in the style of System Settings: sidebar with search (⌘F), colored pages, card rows
+- Visual shape picker with live previews
+- Open at login
+- App icon
+- Signed with Developer ID and notarized by Apple: opens without Gatekeeper warnings
+
+### Changed
+
+- Bundle identifier is now `dev.oprimo.CameraMan` (settings from 1.0 start fresh)
+- Restore defaults asks for confirmation from the menu bar too
+
+### Removed
+
+- Organic / hand-drawn custom shapes
+
+### Fixed
+
+- Border, gradient and shadow colors were never saved and reset on every launch
+
 ## [1.0.0] - 2025-02-09
 
 ### Added

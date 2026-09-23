@@ -1,15 +1,15 @@
-# Camera-Man
+# CameraMan
 
 A small macOS camera overlay app with customizable shapes, draggable window, and status bar menu — similar to [Mini Video Me](https://github.com/maykbrito/mini-video-me), built with SwiftUI.
 
 ## Features
 
 - **Camera preview** with selectable video devices
-- **Custom shapes**: Circle, Rectangle, Rounded Rectangle (clip applied to preview)
+- **Shapes**: Circle, Square, Vertical 9:16, Horizontal 16:9, with adjustable corner radius
 - **Position & zoom**: Offset (arrow keys) and scale (+/-), reset zoom (R)
 - **Flip horizontal** (/), **cycle shape** (O), **switch camera** (Backspace), **toggle window size** (Space)
 - **Border**: Toggle, width, and color in Settings
-- **Settings panel**: Camera, shape, position, zoom, flip, border, window size, screen edge
+- **Settings window**: System Settings–style sidebar with search: Camera, Shape, Framing, Image, Border & Shadow, Window, General (open at login), Shortcuts, About
 - **Status bar menu**: Icon in menu bar with Settings, Restore defaults, Window size, Screen edge, Camera list, Quit
 - **Persistence**: UserDefaults for all settings
 
@@ -47,29 +47,25 @@ To build a Release version and create a DMG that users can install (drag to Appl
 ./create-dmg.sh
 ```
 
-This produces `CameraMan-1.0.0.dmg` in the project root. To use a custom version label:
-
-```bash
-./create-dmg.sh 1.2.0   # creates CameraMan-1.2.0.dmg
-```
+This produces `CameraMan-<version>.dmg` in the project root, with the version taken from `MARKETING_VERSION` in the Xcode project.
 
 You can upload the DMG to GitHub Releases, your website, or any file host for others to download and install.
 
-### Unsigned / un-notarized apps
+### Signing and notarization
 
-The DMG is built without Apple code signing or notarization, so macOS Gatekeeper may block it the first time users try to open CameraMan. They may see a message like *“CameraMan can’t be opened because it is from an unidentified developer”* or *“the developer cannot be verified”*.
+`create-dmg.sh` signs the app with a Developer ID certificate (hardened runtime + camera entitlement), notarizes and staples both the app and the DMG, so it opens on any Mac without Gatekeeper warnings. It reads two settings from the environment or from a git-ignored `.env.local`:
 
-**How to open the app anyway:**
+```bash
+CAMERAMAN_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+CAMERAMAN_NOTARY_PROFILE="your-notary-profile"   # from: xcrun notarytool store-credentials
+```
 
-1. **Right-click (or Control+click) on CameraMan** in Applications (or in the DMG) → **Open** → confirm with **Open** in the dialog. This only needs to be done once; afterward the app will open normally.
-2. Alternatively, if a single-click already showed the security dialog: go to **System Settings → Privacy & Security** and scroll to the **Security** section. If macOS shows a line like *“CameraMan was blocked from use because it is not from an identified developer”*, click **Open Anyway** and confirm.
-
-This is expected for apps that are not signed with an Apple Developer account. To distribute without this prompt you would need to [sign and notarize](https://developer.apple.com/documentation/security/notarizing_mac_software_before_distribution) the app (Apple Developer Program required).
+Without them the DMG is still built, but ad-hoc signed, and macOS will block it on other Macs (right-click → Open to get past it).
 
 ## Usage
 
-- **Settings**: Click the gear icon on the preview or use **⌘,**. Use the status bar icon for quick access when the window is in the background.
-- **Keyboard shortcuts** (with window focused): Arrows (position), +/− (zoom da câmera), R (reset zoom), / (flip), O (cycle shape), Backspace (next camera), Space (toggle window size).
+- **Settings**: Use **⌘,** or the menu bar icon. Use the status bar icon for quick access when the window is in the background.
+- **Keyboard shortcuts** (with window focused): Arrows (position), +/− (zoom), R (reset zoom), / (flip), O (cycle shape), Backspace (next camera), Space (toggle window size).
 
 ## Contributing
 

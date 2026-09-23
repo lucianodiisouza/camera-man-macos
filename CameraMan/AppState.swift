@@ -11,8 +11,6 @@ final class AppState: ObservableObject {
 
     // MARK: - Shape & transform
     @Published var shapeType: ShapeType = .circle
-    @Published var selectedCustomShapeId: UUID?
-    @Published var customShapes: [CustomShape] = []
     @Published var shapeCornerRadius: CGFloat = 0
     @Published var offsetX: Double = 0
     @Published var offsetY: Double = 0
@@ -51,9 +49,7 @@ final class AppState: ObservableObject {
     @Published var isWindowVisible: Bool = true
 
     // MARK: - UI
-    @Published var showSettings: Bool = false
     @Published var toastMessage: String?
-    @Published var showResetConfirmation: Bool = false
 
     // MARK: - Constants
     static let scaleRange: ClosedRange<Double> = 1.0...2.0
@@ -108,8 +104,6 @@ final class AppState: ObservableObject {
         let originLargeY = "originLargeY"
         let spaceSlot1 = "spaceSlot1"
         let spaceSlot2 = "spaceSlot2"
-        let customShapes = "customShapes"
-        let selectedCustomShapeId = "selectedCustomShapeId"
         let cameraPermissionGranted = "cameraPermissionGranted"
     }
 
@@ -197,17 +191,6 @@ final class AppState: ObservableObject {
            let p = WindowSizePreset(rawValue: raw) { spaceSlot1 = p }
         if let raw = defaults.string(forKey: defaultsKeys.spaceSlot2),
            let p = WindowSizePreset(rawValue: raw) { spaceSlot2 = p }
-        if let data = defaults.data(forKey: defaultsKeys.customShapes),
-           let decoded = try? JSONDecoder().decode([CustomShape].self, from: data) {
-            customShapes = decoded
-        }
-        if let uuidString = defaults.string(forKey: defaultsKeys.selectedCustomShapeId),
-           let id = UUID(uuidString: uuidString), customShapes.contains(where: { $0.id == id }) {
-            selectedCustomShapeId = id
-        }
-        if shapeType == .custom && selectedCustomShapeId == nil {
-            shapeType = .circle
-        }
         screenEdge = screenEdge(for: windowSizePreset)
     }
 
@@ -247,10 +230,6 @@ final class AppState: ObservableObject {
         }
         defaults.set(spaceSlot1.rawValue, forKey: defaultsKeys.spaceSlot1)
         defaults.set(spaceSlot2.rawValue, forKey: defaultsKeys.spaceSlot2)
-        if let data = try? JSONEncoder().encode(customShapes) {
-            defaults.set(data, forKey: defaultsKeys.customShapes)
-        }
-        defaults.set(selectedCustomShapeId?.uuidString, forKey: defaultsKeys.selectedCustomShapeId)
         if cameraPermissionGranted == true {
             defaults.set(true, forKey: defaultsKeys.cameraPermissionGranted)
         }
@@ -289,38 +268,6 @@ final class AppState: ObservableObject {
         originForPreset = [:]
         spaceSlot1 = .sm
         spaceSlot2 = .lg
-        customShapes = []
-        selectedCustomShapeId = nil
-        if shapeType == .custom { shapeType = .circle }
-        saveToUserDefaults()
-    }
-
-    /// The custom shape currently selected (when shapeType == .custom).
-    var currentCustomShape: CustomShape? {
-        guard shapeType == .custom, let id = selectedCustomShapeId else { return nil }
-        return customShapes.first { $0.id == id }
-    }
-
-    func addCustomShape(_ shape: CustomShape) {
-        customShapes.append(shape)
-        selectedCustomShapeId = shape.id
-        shapeType = .custom
-        saveToUserDefaults()
-    }
-
-    func removeCustomShape(_ id: UUID) {
-        customShapes.removeAll { $0.id == id }
-        if selectedCustomShapeId == id {
-            selectedCustomShapeId = customShapes.first?.id
-            if selectedCustomShapeId == nil { shapeType = .circle }
-        }
-        saveToUserDefaults()
-    }
-
-    func selectCustomShape(_ id: UUID) {
-        guard customShapes.contains(where: { $0.id == id }) else { return }
-        selectedCustomShapeId = id
-        shapeType = .custom
         saveToUserDefaults()
     }
 
@@ -389,16 +336,9 @@ final class AppState: ObservableObject {
     }
 
     func cycleShape() {
-        let cycleList = ShapeType.builtinCases + (customShapes.isEmpty ? [] : [.custom])
-        guard let idx = cycleList.firstIndex(of: shapeType) else {
-            shapeType = cycleList.first ?? .circle
-            saveToUserDefaults()
-            return
-        }
-        shapeType = cycleList[(idx + 1) % cycleList.count]
-        if shapeType == .custom, selectedCustomShapeId == nil, let first = customShapes.first {
-            selectedCustomShapeId = first.id
-        }
+        let shapes = ShapeType.allCases
+        let idx = shapes.firstIndex(of: shapeType) ?? 0
+        shapeType = shapes[(idx + 1) % shapes.count]
         saveToUserDefaults()
     }
 

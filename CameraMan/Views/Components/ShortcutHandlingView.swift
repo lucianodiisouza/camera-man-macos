@@ -92,14 +92,8 @@ final class ShortcutHandlingNSView: NSView {
     }
 
     private func toggleSpaceSlotSize(_ appState: AppState) {
-        let newPreset = appState.spaceToggleTargetPreset()
-        appState.setWindowSizePreset(newPreset)
-        guard let window = window ?? NSApplication.shared.windows.first(where: { $0.isVisible }),
-              let screen = window.screen ?? NSScreen.main else { return }
-        let visibleFrame = screen.visibleFrame
-        let newSize = newPreset.size(visibleFrame: visibleFrame)
-        let origin = appState.originToApply(for: newPreset, visibleFrame: visibleFrame, windowSize: newSize)
-        window.setFrame(CGRect(origin: origin, size: newSize), display: true)
+        appState.setWindowSizePreset(appState.spaceToggleTargetPreset())
+        (NSApp.delegate as? AppDelegate)?.applyWindowPreset()
     }
 }
 

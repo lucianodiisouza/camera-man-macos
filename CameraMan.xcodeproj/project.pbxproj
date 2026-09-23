@@ -17,11 +17,11 @@
 		BF_ColorComponents /* Color+Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ColorComponents /* Color+Components.swift */; };
 		BF_ContentView /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ContentView /* ContentView.swift */; };
 		BF_KeyboardMonitor /* KeyboardShortcutMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */; };
-		BF_SettingsPanel /* SettingsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsPanel /* SettingsPanel.swift */; };
+		BF_SettingsPages /* SettingsPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsPages /* SettingsPages.swift */; };
 		BF_ShapeType /* ShapeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShapeType /* ShapeType.swift */; };
-		BF_CustomShape /* CustomShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CustomShape /* CustomShape.swift */; };
-		BF_CustomShapesPanel /* CustomShapesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_CustomShapesPanel /* CustomShapesPanel.swift */; };
-		BF_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */; };
+		BF_SettingsKit /* SettingsKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsKit /* SettingsKit.swift */; };
+		BF_SettingsWindow /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsWindow /* SettingsWindow.swift */; };
+		BF_Assets /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FR_Assets /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,11 +37,12 @@
 		FR_InfoPlist /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutMonitor.swift; sourceTree = "<group>"; };
 		FR_Product /* CameraMan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraMan.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FR_SettingsPanel /* SettingsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanel.swift; sourceTree = "<group>"; };
+		FR_SettingsPages /* SettingsPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPages.swift; sourceTree = "<group>"; };
 		FR_ShapeType /* ShapeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeType.swift; sourceTree = "<group>"; };
-		FR_CustomShape /* CustomShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShape.swift; sourceTree = "<group>"; };
-		FR_CustomShapesPanel /* CustomShapesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomShapesPanel.swift; sourceTree = "<group>"; };
-		FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeDrawingCanvas.swift; sourceTree = "<group>"; };
+		FR_SettingsKit /* SettingsKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsKit.swift; sourceTree = "<group>"; };
+		FR_SettingsWindow /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
+		FR_Assets /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FR_Entitlements /* CameraMan.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CameraMan.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -52,6 +53,8 @@
 				FR_AppDelegate /* AppDelegate.swift */,
 				FR_AppState /* AppState.swift */,
 				FR_InfoPlist /* Info.plist */,
+				FR_Entitlements /* CameraMan.entitlements */,
+				FR_Assets /* Assets.xcassets */,
 				GP_Models /* Models */,
 				GP_Extensions /* Extensions */,
 				GP_Services /* Services */,
@@ -81,7 +84,6 @@
 			isa = PBXGroup;
 			children = (
 				FR_ShapeType /* ShapeType.swift */,
-				FR_CustomShape /* CustomShape.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -114,9 +116,9 @@
 		GP_Settings /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				FR_SettingsPanel /* SettingsPanel.swift */,
-				FR_CustomShapesPanel /* CustomShapesPanel.swift */,
-				FR_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift */,
+				FR_SettingsWindow /* SettingsWindow.swift */,
+				FR_SettingsKit /* SettingsKit.swift */,
+				FR_SettingsPages /* SettingsPages.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -184,6 +186,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF_Assets /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,10 +208,9 @@
 				BF_ShortcutHandling /* ShortcutHandlingView.swift in Sources */,
 				BF_CameraView /* CameraView.swift in Sources */,
 				BF_ContentView /* ContentView.swift in Sources */,
-				BF_SettingsPanel /* SettingsPanel.swift in Sources */,
-				BF_CustomShape /* CustomShape.swift in Sources */,
-				BF_CustomShapesPanel /* CustomShapesPanel.swift in Sources */,
-				BF_ShapeDrawingCanvas /* ShapeDrawingCanvas.swift in Sources */,
+				BF_SettingsWindow /* SettingsWindow.swift in Sources */,
+				BF_SettingsKit /* SettingsKit.swift in Sources */,
+				BF_SettingsPages /* SettingsPages.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,23 +277,26 @@
 		CF_Debug_Target /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
-				CODE_SIGN_ENTITLEMENTS = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CameraMan/CameraMan.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = TJ7XUV6VQ9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CameraMan/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Luciano de Souza";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cameraman.app;
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.oprimo.CameraMan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -351,23 +356,26 @@
 		CF_Release_Target /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
-				CODE_SIGN_ENTITLEMENTS = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CameraMan/CameraMan.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = TJ7XUV6VQ9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CameraMan/Info.plist;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Luciano de Souza";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.cameraman.app;
+				MARKETING_VERSION = 1.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.oprimo.CameraMan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

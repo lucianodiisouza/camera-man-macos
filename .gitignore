@@ -11,3 +11,5 @@ DerivedData/
 
 
 *.dmg
+# Signing settings for create-dmg.sh
+.env.local
