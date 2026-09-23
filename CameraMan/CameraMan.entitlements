@@ -2,6 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Required by the Mac App Store. The app only needs the camera, so the sandbox costs nothing. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
 	<!-- The hardened runtime (required for notarization) blocks the camera unless this is set. -->
 	<key>com.apple.security.device.camera</key>
 	<true/>

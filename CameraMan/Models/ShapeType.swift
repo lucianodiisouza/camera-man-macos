@@ -2,6 +2,7 @@ import SwiftUI
 
 enum ShapeType: String, CaseIterable, Identifiable, Codable {
     case circle
+    case organic
     case square
     case verticalRectangle  // 9:16
     case horizontalRectangle // 16:9
@@ -11,6 +12,7 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
     var displayName: String {
         switch self {
         case .circle: return "Circle"
+        case .organic: return "Organic"
         case .square: return "Square"
         case .verticalRectangle: return "Vertical Rectangle (9:16)"
         case .horizontalRectangle: return "Horizontal Rectangle (16:9)"
@@ -21,6 +23,7 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
     var shortName: String {
         switch self {
         case .circle: return "Circle"
+        case .organic: return "Organic"
         case .square: return "Square"
         case .verticalRectangle: return "Vertical 9:16"
         case .horizontalRectangle: return "Horizontal 16:9"
@@ -30,6 +33,7 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
     var symbol: String {
         switch self {
         case .circle: return "circle"
+        case .organic: return "seal"
         case .square: return "square"
         case .verticalRectangle: return "rectangle.portrait"
         case .horizontalRectangle: return "rectangle"
@@ -44,9 +48,14 @@ enum ShapeType: String, CaseIterable, Identifiable, Codable {
 struct ShapeTypeShape: Shape {
     var shapeType: ShapeType
     var cornerRadius: CGFloat = 20
+    var blob: OrganicBlob = .default
+    /// Seconds into the breathing motion; 0 holds the organic outline still.
+    var time: Double = 0
 
     func path(in rect: CGRect) -> Path {
         switch shapeType {
+        case .organic:
+            return blob.path(in: rect, time: time)
         case .circle:
             let side = min(rect.width, rect.height)
             let origin = CGPoint(x: rect.midX - side / 2, y: rect.midY - side / 2)

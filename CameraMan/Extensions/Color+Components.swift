@@ -1,4 +1,10 @@
 import SwiftUI
+
+extension String {
+    /// This English text translated from the string catalog. For text that reaches a view as a `String` (row titles,
+    /// enum names), which SwiftUI's `Text` would otherwise show as is.
+    var localized: String { String(localized: String.LocalizationValue(self)) }
+}
 #if canImport(AppKit)
 import AppKit
 #endif

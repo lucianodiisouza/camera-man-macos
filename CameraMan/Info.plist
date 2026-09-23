@@ -6,6 +6,8 @@
 	<string>CameraMan needs camera access to show your video preview in a floating window.</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

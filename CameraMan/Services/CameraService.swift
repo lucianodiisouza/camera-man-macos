@@ -1,19 +1,16 @@
 import AVFoundation
 import Combine
-import CoreImage
 import SwiftUI
 
-final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+/// Runs the capture session. Frames go straight to an `AVCaptureVideoPreviewLayer`, so the video is drawn by the GPU
+/// and never touches the CPU; color correction is a Core Image filter on that layer (see `CameraPreviewNSView`).
+final class CameraService: NSObject, ObservableObject {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "camera.session")
-    private let videoOutputQueue = DispatchQueue(label: "camera.videoOutput")
     private var currentInput: AVCaptureDeviceInput?
     private var deviceDiscoverySession: AVCaptureDevice.DiscoverySession?
-    private lazy var ciContext: CIContext = CIContext(options: [.useSoftwareRenderer: false])
 
     @Published var previewLayer: AVCaptureVideoPreviewLayer?
-    /// Frame atual com correção de cor aplicada (nil até o primeiro frame).
-    @Published var currentFrame: CGImage?
     @Published var videoDevices: [CameraDevice] = []
     @Published var status: CameraStatus = .loading
 
@@ -39,38 +36,11 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
 
     private func configureSession() {
         session.beginConfiguration()
-        session.sessionPreset = .medium
-
-        let videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
-        videoOutput.setSampleBufferDelegate(self, queue: videoOutputQueue)
-        videoOutput.alwaysDiscardsLateVideoFrames = true
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
-        }
-
+        // The camera's best mode. `.medium` is 480×360 on the Mac, which a Large or Full window on a Retina screen
+        // blows up more than twice and shows soft in a recording.
+        session.sessionPreset = .high
         session.commitConfiguration()
         refreshDeviceList()
-    }
-
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-        let b = appState?.brightness ?? 0
-        let c = appState?.contrast ?? 1.0
-        let s = appState?.saturation ?? 1.0
-        let inputImage = CIImage(cvPixelBuffer: pixelBuffer)
-        guard let filter = CIFilter(name: "CIColorControls") else { return }
-        filter.setValue(inputImage, forKey: kCIInputImageKey)
-        filter.setValue(b, forKey: kCIInputBrightnessKey)
-        filter.setValue(c, forKey: kCIInputContrastKey)
-        filter.setValue(s, forKey: kCIInputSaturationKey)
-        guard let outputImage = filter.outputImage else { return }
-        let extent = outputImage.extent
-        guard extent.width > 0, extent.height > 0 else { return }
-        guard let cgImage = ciContext.createCGImage(outputImage, from: extent) else { return }
-        DispatchQueue.main.async { [weak self] in
-            self?.currentFrame = cgImage
-        }
     }
 
     func refreshDeviceList(completion: (() -> Void)? = nil) {
@@ -117,6 +87,8 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         }
         do {
             let input = try AVCaptureDeviceInput(device: device)
+            // A preset the new camera cannot do would stop the session.
+            session.sessionPreset = device.supportsSessionPreset(.high) ? .high : .medium
             if session.canAddInput(input) {
                 session.addInput(input)
                 currentInput = input
@@ -168,7 +140,7 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         session.startRunning()
     }
 
-    /// Pause capture when window is minimized to save CPU and power.
+    /// Stops capture while the window is hidden or minimized, which also turns the camera light off.
     func pause() {
         sessionQueue.async { [weak self] in
             self?.session.stopRunning()

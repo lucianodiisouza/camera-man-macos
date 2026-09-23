@@ -53,14 +53,14 @@ enum SettingsPageID: String, CaseIterable, Identifiable {
     /// a result can scroll to its row.
     var searchableSettings: [String] {
         switch self {
-        case .camera: return ["Video source"]
-        case .shape: return ShapeType.allCases.map(\.shortName) + ["Corner radius"]
+        case .camera: return ["Video source", "Video effects"]
+        case .shape: return ShapeType.allCases.map(\.shortName) + ["Soft edge", "Corner radius", "Shuffle", "Breathing"]
         case .framing: return ["Horizontal position", "Vertical position", "Zoom", "Mirror horizontally", "Flip vertically"]
         case .image: return ["Brightness", "Contrast", "Saturation"]
         case .border: return ["Show border", "Width", "Gradient", "Color", "Start color", "End color", "Show shadow", "Radius", "Shadow color"]
         case .window: return ["Size", "Screen corner", "Space bar: first size", "Space bar: second size"]
-        case .general: return ["Open at login", "Restore defaults"]
-        case .shortcuts: return ["Menu bar", "Camera window"]
+        case .general: return ["Open at login", "Hide Dock icon", "Language", "Restore defaults"]
+        case .shortcuts: return ["Global shortcuts", "Show / hide camera", "From any app", "Camera window", "Menu bar"]
         case .about: return []
         }
     }
@@ -83,7 +83,8 @@ struct SettingsSearchEntry: Identifiable {
         guard !needle.isEmpty else { return [] }
         return SettingsPageID.allCases.flatMap { page in
             ([page.title] + page.searchableSettings)
-                .filter { $0.localizedCaseInsensitiveContains(needle) }
+                // Matches what is on screen, and the English name too.
+                .filter { $0.localized.localizedCaseInsensitiveContains(needle) || $0.localizedCaseInsensitiveContains(needle) }
                 .map { SettingsSearchEntry(title: $0, page: page) }
         }
     }
@@ -122,7 +123,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
                 contentRect: NSRect(x: 0, y: 0, width: 820, height: 600),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                 backing: .buffered, defer: false)
-            window.title = "CameraMan Settings"
+            window.title = String(localized: "CameraMan Settings")
             // A full-size content view so the sidebar runs up to the top of the window with the traffic lights sitting
             // on it, the way System Settings has it.
             window.titleVisibility = .hidden
@@ -274,7 +275,7 @@ private struct SettingsSidebar: View {
                     Button {
                         navigation.open(entry)
                     } label: {
-                        Text(entry.title)
+                        Text(entry.title.localized)
                             .font(.system(size: 12))
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -313,7 +314,7 @@ private struct SidebarRow: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 SettingsIcon(symbol: page.symbol, color: page.color, size: 24)
-                Text(page.title)
+                Text(page.title.localized)
                     .font(.system(size: 13))
                     .foregroundStyle(isSelected ? Color.white : Color.primary)
                 Spacer()

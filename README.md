@@ -5,11 +5,13 @@ A small macOS camera overlay app with customizable shapes, draggable window, and
 ## Features
 
 - **Camera preview** with selectable video devices
-- **Shapes**: Circle, Square, Vertical 9:16, Horizontal 16:9, with adjustable corner radius
+- **Shapes**: Circle, Organic (presets, shuffle, optional breathing), Square, Vertical 9:16, Horizontal 16:9; soft edge and corner radius
 - **Position & zoom**: Offset (arrow keys) and scale (+/-), reset zoom (R)
 - **Flip horizontal** (/), **cycle shape** (O), **switch camera** (Backspace), **toggle window size** (Space)
 - **Border**: Toggle, width, and color in Settings
 - **Settings window**: System Settings–style sidebar with search: Camera, Shape, Framing, Image, Border & Shadow, Window, General (open at login), Shortcuts, About
+- **Made for recording**: global shortcuts (⌃⌥⌘C show/hide, ⌃⌥⌘S size) from any app, follows you across desktops and full-screen apps, camera off while hidden, GPU color correction
+- **Languages**: English and Brazilian Portuguese
 - **Status bar menu**: Icon in menu bar with Settings, Restore defaults, Window size, Screen edge, Camera list, Quit
 - **Persistence**: UserDefaults for all settings
 
@@ -61,6 +63,15 @@ CAMERAMAN_NOTARY_PROFILE="your-notary-profile"   # from: xcrun notarytool store-
 ```
 
 Without them the DMG is still built, but ad-hoc signed, and macOS will block it on other Macs (right-click → Open to get past it).
+
+## Mac App Store
+
+```bash
+./appstore.sh            # archive + export a signed .pkg to build/appstore
+./appstore.sh --upload   # archive + upload to App Store Connect
+```
+
+Signing is automatic through the Apple account in Xcode → Settings → Accounts. Listing text, review notes and screenshot sizes are in [appstore/LISTING.md](appstore/LISTING.md); the privacy policy is [PRIVACY.md](PRIVACY.md).
 
 ## Usage
 

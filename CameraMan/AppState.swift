@@ -12,6 +12,11 @@ final class AppState: ObservableObject {
     // MARK: - Shape & transform
     @Published var shapeType: ShapeType = .circle
     @Published var shapeCornerRadius: CGFloat = 0
+    @Published var organicBlob: OrganicBlob = .default
+    /// The organic outline slowly changes shape.
+    @Published var organicBreathing: Bool = false
+    /// Feathers the edge of any shape, in points; 0 is a crisp cutout.
+    @Published var softEdge: CGFloat = 0
     @Published var offsetX: Double = 0
     @Published var offsetY: Double = 0
     @Published var scale: Double = 1.0
@@ -48,6 +53,12 @@ final class AppState: ObservableObject {
     @Published var selectedDisplayId: CGDirectDisplayID?
     @Published var isWindowVisible: Bool = true
 
+    // MARK: - App
+    /// Menu-bar-only: no Dock icon and no app menu.
+    @Published var hidesDockIcon: Bool = false
+    /// ⌃⌥⌘C / ⌃⌥⌘S work from any app.
+    @Published var globalShortcutsEnabled: Bool = true
+
     // MARK: - UI
     @Published var toastMessage: String?
 
@@ -57,6 +68,7 @@ final class AppState: ObservableObject {
     static let borderWidthRange: ClosedRange<CGFloat> = 0...20
     static let borderShadowRadiusRange: ClosedRange<CGFloat> = 0...24
     static let shapeCornerRadiusRange: ClosedRange<CGFloat> = 0...150
+    static let softEdgeRange: ClosedRange<CGFloat> = 0...40
     static let brightnessRange: ClosedRange<Double> = -0.5...0.5
     static let contrastRange: ClosedRange<Double> = 0.5...2.0
     static let saturationRange: ClosedRange<Double> = 0...2.0
@@ -68,6 +80,9 @@ final class AppState: ObservableObject {
         let selectedDeviceId = "selectedDeviceId"
         let shapeType = "shapeType"
         let shapeCornerRadius = "shapeCornerRadius"
+        let organicBlob = "organicBlob"
+        let organicBreathing = "organicBreathing"
+        let softEdge = "softEdge"
         let offsetX = "offsetX"
         let offsetY = "offsetY"
         let scale = "scale"
@@ -105,6 +120,8 @@ final class AppState: ObservableObject {
         let spaceSlot1 = "spaceSlot1"
         let spaceSlot2 = "spaceSlot2"
         let cameraPermissionGranted = "cameraPermissionGranted"
+        let hidesDockIcon = "hidesDockIcon"
+        let globalShortcutsEnabled = "globalShortcutsEnabled"
     }
 
     init() {
@@ -126,6 +143,12 @@ final class AppState: ObservableObject {
             }
         }
         shapeCornerRadius = CGFloat(defaults.double(forKey: defaultsKeys.shapeCornerRadius))
+        if let data = defaults.data(forKey: defaultsKeys.organicBlob),
+           let blob = try? JSONDecoder().decode(OrganicBlob.self, from: data) {
+            organicBlob = blob
+        }
+        organicBreathing = defaults.bool(forKey: defaultsKeys.organicBreathing)
+        softEdge = CGFloat(defaults.double(forKey: defaultsKeys.softEdge))
         offsetX = defaults.double(forKey: defaultsKeys.offsetX)
         offsetY = defaults.double(forKey: defaultsKeys.offsetY)
         scale = defaults.double(forKey: defaultsKeys.scale)
@@ -191,6 +214,8 @@ final class AppState: ObservableObject {
            let p = WindowSizePreset(rawValue: raw) { spaceSlot1 = p }
         if let raw = defaults.string(forKey: defaultsKeys.spaceSlot2),
            let p = WindowSizePreset(rawValue: raw) { spaceSlot2 = p }
+        hidesDockIcon = defaults.bool(forKey: defaultsKeys.hidesDockIcon)
+        globalShortcutsEnabled = defaults.object(forKey: defaultsKeys.globalShortcutsEnabled) as? Bool ?? true
         screenEdge = screenEdge(for: windowSizePreset)
     }
 
@@ -198,6 +223,9 @@ final class AppState: ObservableObject {
         defaults.set(selectedDeviceId, forKey: defaultsKeys.selectedDeviceId)
         defaults.set(shapeType.rawValue, forKey: defaultsKeys.shapeType)
         defaults.set(Double(shapeCornerRadius), forKey: defaultsKeys.shapeCornerRadius)
+        defaults.set(try? JSONEncoder().encode(organicBlob), forKey: defaultsKeys.organicBlob)
+        defaults.set(organicBreathing, forKey: defaultsKeys.organicBreathing)
+        defaults.set(Double(softEdge), forKey: defaultsKeys.softEdge)
         defaults.set(offsetX, forKey: defaultsKeys.offsetX)
         defaults.set(offsetY, forKey: defaultsKeys.offsetY)
         defaults.set(scale, forKey: defaultsKeys.scale)
@@ -230,6 +258,8 @@ final class AppState: ObservableObject {
         }
         defaults.set(spaceSlot1.rawValue, forKey: defaultsKeys.spaceSlot1)
         defaults.set(spaceSlot2.rawValue, forKey: defaultsKeys.spaceSlot2)
+        defaults.set(hidesDockIcon, forKey: defaultsKeys.hidesDockIcon)
+        defaults.set(globalShortcutsEnabled, forKey: defaultsKeys.globalShortcutsEnabled)
         if cameraPermissionGranted == true {
             defaults.set(true, forKey: defaultsKeys.cameraPermissionGranted)
         }
@@ -245,6 +275,9 @@ final class AppState: ObservableObject {
         selectedDeviceId = nil
         shapeType = .circle
         shapeCornerRadius = 0
+        organicBlob = .default
+        organicBreathing = false
+        softEdge = 0
         offsetX = 0
         offsetY = 0
         scale = 1.0
@@ -268,6 +301,8 @@ final class AppState: ObservableObject {
         originForPreset = [:]
         spaceSlot1 = .sm
         spaceSlot2 = .lg
+        hidesDockIcon = false
+        globalShortcutsEnabled = true
         saveToUserDefaults()
     }
 
@@ -332,6 +367,8 @@ final class AppState: ObservableObject {
 
     /// Sincroniza `screenEdge` com a posição salva do preset atual (ex.: após trocar de tamanho pelo Picker).
     func syncScreenEdgeToPreset() {
+        hidesDockIcon = defaults.bool(forKey: defaultsKeys.hidesDockIcon)
+        globalShortcutsEnabled = defaults.object(forKey: defaultsKeys.globalShortcutsEnabled) as? Bool ?? true
         screenEdge = screenEdge(for: windowSizePreset)
     }
 

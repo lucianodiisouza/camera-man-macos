@@ -58,10 +58,10 @@ struct SettingsSectionTitle: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(title)
+            Text(title.localized)
                 .font(.system(size: 18, weight: .bold))
             if let subtitle {
-                Text(subtitle)
+                Text(subtitle.localized)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
             }
@@ -81,7 +81,7 @@ struct SettingsGroup<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let title {
-                Text(title)
+                Text(title.localized)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 4)
@@ -90,7 +90,7 @@ struct SettingsGroup<Content: View>: View {
                 .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(SettingsPalette.card))
                 .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(SettingsPalette.cardStroke))
             if let footer {
-                Text(footer)
+                Text(footer.localized)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 4)
@@ -131,10 +131,10 @@ struct SettingsRow<Trailing: View>: View {
         HStack(spacing: 12) {
             SettingsIcon(symbol: symbol, color: color)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(title.localized)
                     .font(.system(size: 13, weight: .medium))
                 if let subtitle {
-                    Text(subtitle)
+                    Text(subtitle.localized)
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -219,11 +219,93 @@ struct SettingsSliderRow: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            Slider(value: $value, in: range, step: step)
+            ThickSlider(value: $value, range: range, step: step, tint: color, label: title, format: format)
                 .padding(.leading, 52)
                 .padding(.trailing, 14)
                 .padding(.bottom, 10)
         }
+    }
+}
+
+/// A wide filled bar you drag, like the sliders in Control Center. For a range that goes both ways around zero
+/// (position, brightness) the fill grows from the middle, so the neutral point stays visible.
+struct ThickSlider: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    var step: Double = 1
+    var tint: Color = .accentColor
+    var label: String = ""
+    var format: (Double) -> String = { String(format: "%.1f", $0) }
+
+    @Environment(\.isEnabled) private var isEnabled
+
+    private var span: Double { range.upperBound - range.lowerBound }
+    private var origin: Double { range.lowerBound < 0 && range.upperBound > 0 ? 0 : range.lowerBound }
+    private func fraction(_ v: Double) -> Double { span > 0 ? (v - range.lowerBound) / span : 0 }
+
+    private let trackHeight: CGFloat = 12
+    private let knobSize: CGFloat = 22
+
+    var body: some View {
+        GeometryReader { geo in
+            // The knob's centre travels between the two ends, so it never hangs off the bar.
+            let travel = max(geo.size.width - knobSize, 1)
+            let x = { (v: Double) in knobSize / 2 + fraction(v) * travel }
+            // One-way settings fill from the very left of the bar; two-way ones from the zero mark.
+            let start = origin == range.lowerBound ? 0 : x(origin)
+            let knob = x(min(max(value, range.lowerBound), range.upperBound))
+            ZStack(alignment: .leading) {
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.primary.opacity(0.1))
+                    Rectangle()
+                        .fill(LinearGradient(colors: [tint.opacity(0.95), tint.opacity(0.75)], startPoint: .top, endPoint: .bottom))
+                        .frame(width: abs(knob - start))
+                        .offset(x: min(start, knob))
+                }
+                .frame(height: trackHeight)
+                .clipShape(Capsule())
+                if origin != range.lowerBound {
+                    // The zero mark of a two-way setting.
+                    Capsule().fill(Color.primary.opacity(0.35)).frame(width: 2, height: trackHeight + 6).offset(x: start - 1)
+                }
+                Circle()
+                    .fill(.white)
+                    .overlay(Circle().strokeBorder(Color.black.opacity(0.08)))
+                    .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+                    .frame(width: knobSize, height: knobSize)
+                    .offset(x: knob - knobSize / 2)
+            }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { drag in set(fraction: (drag.location.x - knobSize / 2) / travel) }
+            )
+        }
+        .frame(height: knobSize + 2)
+        .opacity(isEnabled ? 1 : 0.4)
+        .accessibilityElement()
+        .accessibilityLabel(label.localized)
+        .accessibilityValue(format(value))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: set(value: value + step)
+            case .decrement: set(value: value - step)
+            @unknown default: break
+            }
+        }
+    }
+
+    private func set(fraction: Double) {
+        set(value: range.lowerBound + min(max(fraction, 0), 1) * span)
+    }
+
+    private func set(value newValue: Double) {
+        var v = min(max(newValue, range.lowerBound), range.upperBound)
+        if step > 0 { v = (v / step).rounded() * step }
+        v = min(max(v, range.lowerBound), range.upperBound)
+        if v == 0 { v = 0 }  // no "-0.00" from rounding a small negative
+        if v != value { value = v }
     }
 }
 
@@ -251,7 +333,7 @@ struct VisualChoiceCard<Preview: View>: View {
                             isSelected ? SettingsPalette.selection : Color.white.opacity(isHovered ? 0.25 : 0.08),
                             lineWidth: isSelected ? 3 : 1)
                 )
-                Text(title)
+                Text(title.localized)
                     .font(.system(size: 12, weight: isSelected ? .bold : .regular))
                     .foregroundStyle(isSelected ? .primary : .secondary)
                     .lineLimit(1)

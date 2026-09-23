@@ -6,6 +6,13 @@ struct CameraView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var cameraService = CameraService()
     @State private var previewLayer: AVCaptureVideoPreviewLayer?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Organic breathing redraws the outline 15 times a second (the motion is slow enough not to need more), and only
+    /// while someone can see it.
+    private var isBreathing: Bool {
+        appState.shapeType == .organic && appState.organicBreathing && appState.isWindowVisible && !reduceMotion
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -39,6 +46,19 @@ struct CameraView: View {
                     cameraService.pause()
                 }
             }
+            // Nobody can see the camera while the screen sleeps or is locked: stop it, which also turns the light off.
+            .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.screensDidSleepNotification)) { _ in
+                cameraService.pause()
+            }
+            .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.sessionDidResignActiveNotification)) { _ in
+                cameraService.pause()
+            }
+            .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.screensDidWakeNotification)) { _ in
+                if appState.isWindowVisible { cameraService.resume() }
+            }
+            .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.sessionDidBecomeActiveNotification)) { _ in
+                if appState.isWindowVisible { cameraService.resume() }
+            }
             .onReceive(NotificationCenter.default.publisher(for: .statusMenuWillOpen)) { _ in
                 cameraService.refreshDeviceList {
                     NotificationCenter.default.post(name: .statusMenuShouldRebuild, object: nil)
@@ -50,49 +70,51 @@ struct CameraView: View {
 
     @ViewBuilder
     private func cameraShapeStack(size: CGSize) -> some View {
+        let shapeView = shape(time: 0)
         ZStack {
             if appState.showShadow, appState.borderShadowRadius > 0 {
                 let shadowStrokeWidth: CGFloat = (appState.showBorder && appState.borderWidth > 0)
                     ? appState.borderWidth + 2 * appState.borderShadowRadius
                     : 2 * appState.borderShadowRadius
-                shapeView
-                    .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
-                    .compositingGroup()
-                    .blur(radius: appState.borderShadowRadius)
+                outline { shape in
+                    shape
+                        .stroke(appState.borderShadowColor, lineWidth: shadowStrokeWidth)
+                        .compositingGroup()
+                        .blur(radius: appState.borderShadowRadius)
+                }
             }
 
-            if let frame = cameraService.currentFrame {
+            if let layer = previewLayer {
                 Group {
-                    FilteredCameraPreviewView(cgImage: frame)
-                        .scaleEffect(
-                            x: appState.flipHorizontal ? -1 : 1,
-                            y: appState.flipVertical ? -1 : 1,
-                            anchor: .center
-                        )
-                        .scaleEffect(appState.scale)
-                        .offset(
-                            x: size.width * (appState.offsetX / 100),
-                            y: size.height * (-appState.offsetY / 100)
-                        )
+                    CameraPreviewRepresentable(
+                        layer: layer,
+                        brightness: appState.brightness,
+                        contrast: appState.contrast,
+                        saturation: appState.saturation
+                    )
+                    .scaleEffect(
+                        x: appState.flipHorizontal ? -1 : 1,
+                        y: appState.flipVertical ? -1 : 1,
+                        anchor: .center
+                    )
+                    .scaleEffect(appState.scale)
+                    .offset(
+                        x: size.width * (appState.offsetX / 100),
+                        y: size.height * (-appState.offsetY / 100)
+                    )
                 }
                 .frame(width: size.width, height: size.height)
-                .clipShape(shapeView)
-            } else if let layer = previewLayer {
-                Group {
-                    CameraPreviewRepresentable(layer: layer)
-                        .scaleEffect(
-                            x: appState.flipHorizontal ? -1 : 1,
-                            y: appState.flipVertical ? -1 : 1,
-                            anchor: .center
-                        )
-                        .scaleEffect(appState.scale)
-                        .offset(
-                            x: size.width * (appState.offsetX / 100),
-                            y: size.height * (-appState.offsetY / 100)
-                        )
+                .mask {
+                    // Only the mask breathes; the camera view under it is not redrawn.
+                    outline { shape in
+                        if appState.softEdge > 0 {
+                            // Inset by the blur radius, so the fade never runs past the outline.
+                            shape.fill().padding(appState.softEdge).blur(radius: appState.softEdge)
+                        } else {
+                            shape.fill()
+                        }
+                    }
                 }
-                .frame(width: size.width, height: size.height)
-                .clipShape(shapeView)
             } else {
                 Color.black
                     .overlay {
@@ -116,8 +138,9 @@ struct CameraView: View {
                     }
             }
 
-            if appState.showBorder, appState.borderWidth > 0 {
-                borderStrokeView()
+            // A border would draw a hard line around a feathered edge, so a soft edge replaces it.
+            if appState.showBorder, appState.borderWidth > 0, appState.softEdge == 0 {
+                outline { borderStrokeView(shape: $0) }
             }
         }
         .contentShape(shapeView)
@@ -159,15 +182,27 @@ struct CameraView: View {
             }
     }
 
-    private var shapeView: some Shape {
-        ShapeTypeShape(shapeType: appState.shapeType, cornerRadius: appState.shapeCornerRadius)
+    /// Draws `content` with the current outline; while breathing, only this part is redrawn on every tick.
+    @ViewBuilder
+    private func outline<Content: View>(@ViewBuilder _ content: @escaping (ShapeTypeShape) -> Content) -> some View {
+        if isBreathing {
+            TimelineView(.animation(minimumInterval: 1.0 / 15)) { context in
+                content(shape(time: context.date.timeIntervalSinceReferenceDate))
+            }
+        } else {
+            content(shape(time: 0))
+        }
+    }
+
+    private func shape(time: Double) -> ShapeTypeShape {
+        ShapeTypeShape(
+            shapeType: appState.shapeType, cornerRadius: appState.shapeCornerRadius, blob: appState.organicBlob, time: time)
     }
 
     /// Border stroke only (gradient or solid). Shadow is drawn as a separate layer behind the preview so it stays external.
     /// Drawn on the clip shape so border always matches the visible camera outline (including when zoom < 1).
     @ViewBuilder
-    private func borderStrokeView() -> some View {
-        let shape = shapeView
+    private func borderStrokeView(shape: ShapeTypeShape) -> some View {
         let lineWidth = appState.borderWidth
         Group {
             if appState.borderUseGradient {
@@ -185,3 +220,4 @@ struct CameraView: View {
         }
     }
 }
+

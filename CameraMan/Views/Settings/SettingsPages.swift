@@ -44,13 +44,27 @@ struct CameraSettingsPage: View {
             SettingsGroup(footer: "Backspace in the camera window jumps to the next camera.") {
                 SettingsPickerRow(
                     symbol: "video.fill", color: SettingsPageID.camera.color, title: "Video source",
-                    subtitle: appState.videoDevices.isEmpty ? "No camera found" : "\(appState.videoDevices.count) available",
+                    subtitle: appState.videoDevices.isEmpty ? "No camera found" : String(localized: "\(appState.videoDevices.count) available"),
                     selection: appState.saving(\.selectedDeviceId)
                 ) {
                     Text("System default").tag(nil as String?)
                     ForEach(appState.videoDevices) { device in
                         Text(device.name).tag(device.id as String?)
                     }
+                }
+            }
+            SettingsGroup {
+                SettingsRow(
+                    symbol: "wand.and.stars", color: Color(hex: "#A855F7"), title: "Video effects",
+                    subtitle: "Portrait blur, Studio Light and backgrounds come from macOS. While the camera is on, click the green camera icon in the menu bar to turn them on"
+                ) {
+                    Image(systemName: "video.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(Color(hex: "#34C759")))
+                        .accessibilityHidden(true)
                 }
             }
             if appState.cameraPermissionGranted == false {
@@ -79,36 +93,112 @@ struct ShapeSettingsPage: View {
     var body: some View {
         SettingsPage {
             SettingsSectionTitle(title: "Shape", subtitle: "The outline your camera is cut to. O cycles through them")
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 14)], spacing: 14) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 12)], spacing: 12) {
                 ForEach(ShapeType.allCases) { shape in
                     VisualChoiceCard(title: shape.shortName, isSelected: appState.shapeType == shape) {
                         appState.shapeType = shape
                         appState.saveToUserDefaults()
                     } preview: {
-                        ShapePreview(shape: shape, cornerRadius: appState.shapeCornerRadius)
+                        ShapePreview(
+                            shape: ShapeTypeShape(
+                                shapeType: shape, cornerRadius: appState.shapeCornerRadius / 5, blob: appState.organicBlob),
+                            softEdge: appState.softEdge / 5)
                     }
                 }
             }
-            SettingsGroup {
+
+            if appState.shapeType == .organic {
+                organicGroup
+            }
+
+            SettingsGroup(footer: appState.softEdge > 0 && appState.showBorder ? "The border is hidden while the edge is soft." : nil) {
+                SettingsSliderRow(
+                    symbol: "circle.dotted.circle", color: SettingsPageID.shape.color, title: "Soft edge",
+                    subtitle: "Fades the camera out toward the outline instead of a hard cut",
+                    value: appState.saving(\.softEdge), range: AppState.softEdgeRange.asDouble,
+                    format: { $0 == 0 ? String(localized: "Off") : "\(Int($0)) pt" })
                 SettingsSliderRow(
                     symbol: "rectangle.roundedtop", color: SettingsPageID.shape.color, title: "Corner radius",
                     subtitle: "Rounds the corners of the square and the rectangles",
                     value: appState.saving(\.shapeCornerRadius), range: AppState.shapeCornerRadiusRange.asDouble,
                     step: 2, format: { "\(Int($0)) pt" })
+                    .disabled(appState.shapeType == .circle || appState.shapeType == .organic)
             }
-            .disabled(appState.shapeType == .circle)
         }
+    }
+
+    private var organicGroup: some View {
+        SettingsGroup(title: "Organic") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    ForEach(OrganicBlob.presets, id: \.name) { preset in
+                        BlobChip(name: preset.name, blob: preset.blob, isSelected: appState.organicBlob == preset.blob) {
+                            appState.organicBlob = preset.blob
+                            appState.saveToUserDefaults()
+                        }
+                    }
+                    BlobChip(
+                        name: "Shuffle", blob: nil,
+                        isSelected: !OrganicBlob.presets.contains { $0.blob == appState.organicBlob }
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.35)) { appState.organicBlob = .random() }
+                        appState.saveToUserDefaults()
+                    }
+                }
+            }
+            .padding(12)
+            .settingAnchor("Shuffle")
+            SettingsToggleRow(
+                symbol: "wind", color: Color(hex: "#14B8A6"), title: "Breathing",
+                subtitle: "The outline slowly changes shape, like it is alive",
+                isOn: appState.saving(\.organicBreathing))
+        }
+    }
+}
+
+/// One organic preset as a small outline, or the Shuffle button when `blob` is nil.
+private struct BlobChip: View {
+    let name: String
+    let blob: OrganicBlob?
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.primary.opacity(0.06))
+                    if let blob {
+                        ShapeTypeShape(shapeType: .organic, blob: blob)
+                            .fill(SettingsPageID.shape.color.opacity(0.85))
+                            .padding(9)
+                    } else {
+                        Image(systemName: "shuffle")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(SettingsPageID.shape.color)
+                    }
+                }
+                .frame(width: 56, height: 56)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(isSelected ? SettingsPalette.selection : .clear, lineWidth: 2))
+                Text(name.localized)
+                    .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
 /// A person silhouette cut to a shape, on the preview backdrop.
 private struct ShapePreview: View {
-    let shape: ShapeType
-    let cornerRadius: CGFloat
+    let shape: ShapeTypeShape
+    var softEdge: CGFloat = 0
 
     var body: some View {
-        // The camera window is about five times this preview, so the radius is scaled to match.
-        let clip = ShapeTypeShape(shapeType: shape, cornerRadius: cornerRadius / 5)
         LinearGradient(colors: [Color(hex: "#64748B"), Color(hex: "#334155")], startPoint: .top, endPoint: .bottom)
             .overlay(alignment: .bottom) {
                 Image(systemName: "person.fill")
@@ -116,8 +206,13 @@ private struct ShapePreview: View {
                     .foregroundStyle(.white.opacity(0.85))
                     .offset(y: 8)
             }
-            .clipShape(clip)
-            .overlay(clip.stroke(Color.white.opacity(0.25), lineWidth: 1))
+            .mask {
+                if softEdge > 0 {
+                    shape.fill().padding(softEdge).blur(radius: softEdge)
+                } else {
+                    shape.fill()
+                }
+            }
             .frame(width: 84, height: 84)
     }
 }
@@ -271,7 +366,7 @@ struct WindowSettingsPage: View {
                             appDelegate?.applyWindowPreset()
                         })
                 ) {
-                    ForEach(WindowSizePreset.allCases) { Text($0.displayName).tag($0) }
+                    ForEach(WindowSizePreset.allCases) { Text($0.displayName.localized).tag($0) }
                 }
                 SettingsPickerRow(
                     symbol: "rectangle.inset.topleft.filled", color: accent, title: "Screen corner",
@@ -283,7 +378,7 @@ struct WindowSettingsPage: View {
                             appDelegate?.applyWindowPreset()
                         })
                 ) {
-                    ForEach(ScreenEdge.allCases) { Text($0.displayName).tag($0) }
+                    ForEach(ScreenEdge.allCases) { Text($0.displayName.localized).tag($0) }
                 }
             }
             SettingsGroup(title: "Space bar", footer: "Space in the camera window switches between these two sizes.") {
@@ -291,13 +386,13 @@ struct WindowSettingsPage: View {
                     symbol: "1.circle.fill", color: Color(hex: "#6366F1"), title: "Space bar: first size",
                     selection: appState.saving(\.spaceSlot1)
                 ) {
-                    ForEach(WindowSizePreset.allCases) { Text($0.displayName).tag($0) }
+                    ForEach(WindowSizePreset.allCases) { Text($0.displayName.localized).tag($0) }
                 }
                 SettingsPickerRow(
                     symbol: "2.circle.fill", color: Color(hex: "#6366F1"), title: "Space bar: second size",
                     selection: appState.saving(\.spaceSlot2)
                 ) {
-                    ForEach(WindowSizePreset.allCases) { Text($0.displayName).tag($0) }
+                    ForEach(WindowSizePreset.allCases) { Text($0.displayName.localized).tag($0) }
                 }
             }
         }
@@ -307,6 +402,7 @@ struct WindowSettingsPage: View {
 // MARK: - General
 
 struct GeneralSettingsPage: View {
+    @EnvironmentObject private var appState: AppState
     @State private var opensAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginItemError: String?
 
@@ -318,6 +414,29 @@ struct GeneralSettingsPage: View {
                     symbol: "power", color: Color(hex: "#22C55E"), title: "Open at login",
                     subtitle: "Start CameraMan when you log in to your Mac",
                     isOn: Binding(get: { opensAtLogin }, set: setOpensAtLogin))
+                SettingsToggleRow(
+                    symbol: "menubar.rectangle", color: Color(hex: "#0EA5E9"), title: "Hide Dock icon",
+                    subtitle: "Keep CameraMan in the menu bar only",
+                    isOn: Binding(
+                        get: { appState.hidesDockIcon },
+                        set: {
+                            appState.hidesDockIcon = $0
+                            appState.saveToUserDefaults()
+                            appDelegate?.applyDockIconPolicy()
+                        }))
+            }
+            SettingsGroup {
+                SettingsRow(
+                    symbol: "globe", color: Color(hex: "#3B82F6"), title: "Language",
+                    subtitle: "CameraMan follows your Mac's language. You can pick another one just for CameraMan"
+                ) {
+                    Button("Change…") {
+                        // System Settings → General → Language & Region, where the Applications list sets it per app.
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.Localization-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                }
             }
             SettingsGroup {
                 SettingsRow(
@@ -348,10 +467,27 @@ struct GeneralSettingsPage: View {
 // MARK: - Shortcuts
 
 struct ShortcutsSettingsPage: View {
+    @EnvironmentObject private var appState: AppState
+
     var body: some View {
         SettingsPage {
-            SettingsSectionTitle(title: "Shortcuts", subtitle: "Keys that work while the camera window is focused")
-            SettingsGroup(title: "Camera window") {
+            SettingsSectionTitle(title: "Shortcuts", subtitle: "Control the camera without leaving what you are recording")
+            SettingsGroup(title: "From any app") {
+                SettingsToggleRow(
+                    symbol: "globe", color: SettingsPageID.shortcuts.color, title: "Global shortcuts",
+                    subtitle: "Work while another app is in front",
+                    isOn: Binding(
+                        get: { appState.globalShortcutsEnabled },
+                        set: {
+                            appState.globalShortcutsEnabled = $0
+                            appState.saveToUserDefaults()
+                            appDelegate?.applyGlobalShortcuts()
+                            appDelegate?.rebuildStatusMenu()
+                        }))
+                ShortcutRow(symbol: "eye.fill", title: "Show / hide camera", keys: GlobalHotKeys.toggleCamera.symbols)
+                ShortcutRow(symbol: "arrow.up.left.and.arrow.down.right", title: "Switch window size", keys: GlobalHotKeys.switchSize.symbols)
+            }
+            SettingsGroup(title: "Camera window", footer: "These work while the camera window is focused.") {
                 ShortcutRow(symbol: "arrow.up.and.down.and.arrow.left.and.right", title: "Move the image", keys: ["←", "→", "↑", "↓"])
                 ShortcutRow(symbol: "plus.magnifyingglass", title: "Zoom in / out", keys: ["+", "−"])
                 ShortcutRow(symbol: "1.magnifyingglass", title: "Reset zoom", keys: ["R"])
@@ -402,7 +538,7 @@ struct AboutSettingsPage: View {
         let info = Bundle.main.infoDictionary
         let short = info?["CFBundleShortVersionString"] as? String ?? "—"
         let build = info?["CFBundleVersion"] as? String ?? "—"
-        return "Version \(short) (\(build))"
+        return String(localized: "Version \(short) (\(build))")
     }
 
     var body: some View {

@@ -22,6 +22,10 @@
 		BF_SettingsKit /* SettingsKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsKit /* SettingsKit.swift */; };
 		BF_SettingsWindow /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_SettingsWindow /* SettingsWindow.swift */; };
 		BF_Assets /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FR_Assets /* Assets.xcassets */; };
+		BF_GlobalHotKeys /* GlobalHotKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_GlobalHotKeys /* GlobalHotKeys.swift */; };
+		BF_OrganicBlob /* OrganicBlob.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR_OrganicBlob /* OrganicBlob.swift */; };
+		BF_Localizable /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = FR_Localizable /* Localizable.xcstrings */; };
+		BF_InfoPlistStrings /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = FR_InfoPlistStrings /* InfoPlist.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +47,10 @@
 		FR_SettingsWindow /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		FR_Assets /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FR_Entitlements /* CameraMan.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CameraMan.entitlements; sourceTree = "<group>"; };
+		FR_GlobalHotKeys /* GlobalHotKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKeys.swift; sourceTree = "<group>"; };
+		FR_OrganicBlob /* OrganicBlob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganicBlob.swift; sourceTree = "<group>"; };
+		FR_Localizable /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		FR_InfoPlistStrings /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -55,6 +63,8 @@
 				FR_InfoPlist /* Info.plist */,
 				FR_Entitlements /* CameraMan.entitlements */,
 				FR_Assets /* Assets.xcassets */,
+				FR_Localizable /* Localizable.xcstrings */,
+				FR_InfoPlistStrings /* InfoPlist.xcstrings */,
 				GP_Models /* Models */,
 				GP_Extensions /* Extensions */,
 				GP_Services /* Services */,
@@ -84,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				FR_ShapeType /* ShapeType.swift */,
+				FR_OrganicBlob /* OrganicBlob.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -109,6 +120,7 @@
 			children = (
 				FR_CameraService /* CameraService.swift */,
 				FR_KeyboardMonitor /* KeyboardShortcutMonitor.swift */,
+				FR_GlobalHotKeys /* GlobalHotKeys.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -170,6 +182,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"pt-BR",
 			);
 			mainGroup = GP_Root;
 			productRefGroup = GP_Products /* Products */;
@@ -187,6 +200,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF_Assets /* Assets.xcassets in Resources */,
+				BF_Localizable /* Localizable.xcstrings in Resources */,
+				BF_InfoPlistStrings /* InfoPlist.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,9 +216,11 @@
 				BF_AppDelegate /* AppDelegate.swift in Sources */,
 				BF_AppState /* AppState.swift in Sources */,
 				BF_ShapeType /* ShapeType.swift in Sources */,
+				BF_OrganicBlob /* OrganicBlob.swift in Sources */,
 				BF_ColorComponents /* Color+Components.swift in Sources */,
 				BF_CameraService /* CameraService.swift in Sources */,
 				BF_KeyboardMonitor /* KeyboardShortcutMonitor.swift in Sources */,
+				BF_GlobalHotKeys /* GlobalHotKeys.swift in Sources */,
 				BF_CameraPreview /* CameraPreviewRepresentable.swift in Sources */,
 				BF_ShortcutHandling /* ShortcutHandlingView.swift in Sources */,
 				BF_CameraView /* CameraView.swift in Sources */,
