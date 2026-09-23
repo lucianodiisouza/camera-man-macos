@@ -4,7 +4,7 @@
 // Run from the repo root (compiled; the `swift` script runner crashes on ImageRenderer):
 //     swiftc -O -o /tmp/compose appstore/screenshots/compose.swift && /tmp/compose [--readme]
 //
-// --readme writes silhouette-only English images to docs/images for the README.
+// --readme writes the English images to docs/images for the README.
 //
 // Reads  appstore/screenshots/raw/<lang>-<page>.png  and  appstore/screenshots/portrait.jpg (optional; a silhouette
 // is drawn without it). Writes appstore/screenshots/<lang>/<n>-<name>.png.
@@ -197,9 +197,10 @@ func write<V: View>(_ view: V, to url: URL) throws {
     try png.write(to: url)
 }
 
-// --readme: English only, always the silhouette (the repo is public), written to docs/images.
+// --readme: English only, written to docs/images. Uses portrait.jpg too (its owner agreed to show it on the public
+// README); the photo file itself stays out of git.
 let forReadme = CommandLine.arguments.contains("--readme")
-let portrait = forReadme ? nil : NSImage(contentsOf: root.appendingPathComponent("portrait.jpg"))
+let portrait = NSImage(contentsOf: root.appendingPathComponent("portrait.jpg"))
 print(portrait == nil ? "(drawing a silhouette)" : "using portrait.jpg")
 
 let copy: [String: [(page: String, title: String, subtitle: String, style: BubbleStyle)]] = [
