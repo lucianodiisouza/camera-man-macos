@@ -13,3 +13,8 @@ DerivedData/
 *.dmg
 # Signing settings for create-dmg.sh
 .env.local
+
+# Personal photo used for the store screenshots
+appstore/screenshots/portrait.jpg
+appstore/screenshots/en/
+appstore/screenshots/pt-BR/

@@ -4,7 +4,7 @@ Paste these into App Store Connect. Character limits are Apple's.
 
 | Field | Value |
 |---|---|
-| Name (30) | CameraMan |
+| Name (30) | CameraMan: Floating Webcam |
 | Subtitle (30) | Floating camera for your Mac |
 | Bundle ID | dev.oprimo.CameraMan |
 | SKU | cameraman-macos |
@@ -72,7 +72,7 @@ your Mac.
 
 ## Keywords (100)
 
-webcam,overlay,floating,bubble,camera,screen recording,presentation,demo,tutorial,facecam,obs,streaming
+overlay,bubble,camera,screen recording,presentation,demo,tutorial,facecam,streaming,teaching,video
 
 ## What's new (first version)
 
@@ -100,7 +100,7 @@ Mac App Store needs at least one, 16:10, at 1280×800, 1440×900, 2560×1600 or 
 
 | Field | Value |
 |---|---|
-| Name (30) | CameraMan |
+| Name (30) | CameraMan: Floating Webcam |
 | Subtitle (30) | Câmera flutuante para seu Mac |
 | Privacy Policy URL | same as English |
 
