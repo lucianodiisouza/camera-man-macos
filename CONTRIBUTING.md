@@ -1,16 +1,16 @@
-# Contributing to Camera-Man
+# Contributing to CameraMan
 
-Thank you for considering contributing to Camera-Man. Below are some guidelines to make the process smooth.
+Thank you for considering contributing to CameraMan. Below are some guidelines to make the process smooth.
 
 ## How to Contribute
 
-- **Bug reports and feature requests:** Open a [GitHub Issue](https://github.com/oprimodev/camera-man-macos/issues). Use the issue templates if available, and include steps to reproduce for bugs.
+- **Bug reports and feature requests:** Open a [GitHub Issue](https://github.com/lucianodiisouza/camera-man-macos/issues). Use the issue templates if available, and include steps to reproduce for bugs.
 - **Code changes:** Open a Pull Request from a fork. Keep PRs focused (one feature or fix per PR) and reference any related issues.
 
 ## Development Setup
 
 1. Clone the repo and open `CameraMan.xcodeproj` in Xcode.
-2. Requirements: macOS 14.0+, Xcode 15+.
+2. Requirements: macOS 14.0+, Xcode 16+.
 3. Select the **CameraMan** scheme and **My Mac**, then build and run (⌘R).
 
 Command-line build:

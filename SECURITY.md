@@ -10,7 +10,7 @@ We release updates for the latest major version. Security fixes may be backporte
 
 ## Reporting a Vulnerability
 
-If you discover a security issue in Camera-Man, please report it responsibly:
+If you discover a security issue in CameraMan, please report it responsibly:
 
 1. **Do not** open a public GitHub issue for security vulnerabilities.
 2. **Email** the maintainers (e.g. via the email listed in your Git config for the repo, or open an issue asking for a private contact) with:
@@ -24,4 +24,4 @@ We appreciate the effort of security researchers and will do our best to respond
 
 ## Scope
 
-Camera-Man is a local macOS app that uses the camera and stores settings in UserDefaults. In scope: issues that could lead to unauthorized camera access, data exposure, or code execution. Out of scope: issues that require physical access, already compromised machine, or issues in macOS/Xcode themselves (report those to Apple).
+CameraMan is a local macOS app that uses the camera and stores settings in UserDefaults. In scope: issues that could lead to unauthorized camera access, data exposure, or code execution. Out of scope: issues that require physical access, already compromised machine, or issues in macOS/Xcode themselves (report those to Apple).

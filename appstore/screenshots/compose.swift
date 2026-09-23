@@ -1,8 +1,10 @@
 // Lays out the Mac App Store screenshots (1440×900) from the raw window captures in raw/ and a portrait for the
 // camera bubble.
 //
-// Run from the repo root:
-//     swift appstore/screenshots/compose.swift
+// Run from the repo root (compiled; the `swift` script runner crashes on ImageRenderer):
+//     swiftc -O -o /tmp/compose appstore/screenshots/compose.swift && /tmp/compose [--readme]
+//
+// --readme writes silhouette-only English images to docs/images for the README.
 //
 // Reads  appstore/screenshots/raw/<lang>-<page>.png  and  appstore/screenshots/portrait.jpg (optional; a silhouette
 // is drawn without it). Writes appstore/screenshots/<lang>/<n>-<name>.png.
@@ -195,8 +197,10 @@ func write<V: View>(_ view: V, to url: URL) throws {
     try png.write(to: url)
 }
 
-let portrait = NSImage(contentsOf: root.appendingPathComponent("portrait.jpg"))
-print(portrait == nil ? "(no portrait.jpg — drawing a silhouette)" : "using portrait.jpg")
+// --readme: English only, always the silhouette (the repo is public), written to docs/images.
+let forReadme = CommandLine.arguments.contains("--readme")
+let portrait = forReadme ? nil : NSImage(contentsOf: root.appendingPathComponent("portrait.jpg"))
+print(portrait == nil ? "(drawing a silhouette)" : "using portrait.jpg")
 
 let copy: [String: [(page: String, title: String, subtitle: String, style: BubbleStyle)]] = [
     "en": [
@@ -215,8 +219,8 @@ let copy: [String: [(page: String, title: String, subtitle: String, style: Bubbl
 
 MainActor.assumeIsolated {
     do {
-        for (lang, screens) in copy {
-            let dir = root.appendingPathComponent(lang)
+        for (lang, screens) in copy where !forReadme || lang == "en" {
+            let dir = forReadme ? URL(fileURLWithPath: "docs/images") : root.appendingPathComponent(lang)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             try write(Hero(lang: lang, portrait: portrait), to: dir.appendingPathComponent("1-hero.png"))
             for (i, s) in screens.enumerated() {

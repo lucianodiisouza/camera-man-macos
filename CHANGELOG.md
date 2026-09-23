@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The camera follows you to every desktop and over full-screen apps
 - Settings point to the macOS video effects (Portrait, Studio Light, Background) in the menu bar
 - Hide Dock icon option (menu bar only)
-- App Sandbox, ready for the Mac App Store
+- App Sandbox; submitted to the Mac App Store as "CameraMan: Floating Webcam"
 - Brazilian Portuguese (pt-BR); Settings → General → Language picks the language just for CameraMan
 - App icon
 - Signed with Developer ID and notarized by Apple: opens without Gatekeeper warnings
